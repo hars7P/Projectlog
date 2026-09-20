@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description"
+    content="Digital Heroes helps golfers improve performance while supporting charitable causes through monthly draws and impact reporting." />
+  <title>Digital Heroes</title>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --surface-alt: #eef4ff;
+      --primary: #3858d9;
+      --primary-strong: #2946b2;
+      --secondary: #8b5cf6;
+      --text: #0f172a;
+      --muted: #475569;
+      --line: #dfe7f5;
+      --success: #16a34a;
+      --warning: #f59e0b;
+      --shadow: 0 20px 50px rgba(31, 41, 55, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, rgba(79, 118, 255, 0.18), transparent 30%), var(--bg);
+      color: var(--text);
+    }
+
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    img {
+      max-width: 100%;
+      display: block;
+    }
+
+    button {
+      font: inherit;
+    }
+
+    .container {
+      width: min(1120px, calc(100% - 32px));
+      margin: 0 auto;
+    }
+
+    .site-header {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(248, 250, 252, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 78px;
+      gap: 20px;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+    }
+
+    .brand-mark {
+      display: grid;
+      place-items: center;
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      color: white;
+      font-size: 0.82rem;
+      box-shadow: 0 10px 24px rgba(56, 88, 217, 0.35);
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .nav-links a:hover {
+      color: var(--primary);
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      border: 0;
+      border-radius: 999px;
+      padding: 0.9rem 1.5rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), var(--primary-strong));
+      color: white;
+      box-shadow: 0 18px 28px rgba(56, 88, 217, 0.24);
+    }
+
+    .btn-secondary {
+      background: white;
+      color: var(--text);
+      border: 1px solid var(--line);
+    }
+
+    .nav-toggle {
+      display: none;
+      border: 1px solid var(--line);
+      background: white;
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      font-size: 1.4rem;
+      cursor: pointer;
+    }
+
+    .nav-links.is-open {
+      display: flex;
+    }
+
+    .hero {
+      padding: 72px 0 24px;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.08fr 0.92fr;
+      align-items: center;
+      gap: 48px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0.52rem 0.8rem;
+      border-radius: 999px;
+      background: rgba(79, 118, 255, 0.08);
+      color: var(--primary);
+      font-weight: 700;
+      font-size: 0.82rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 18px 0 18px;
+      font-size: clamp(2.8rem, 5vw, 5rem);
+      line-height: 0.96;
+      letter-spacing: -0.06em;
+    }
+
+    .hero-copy p {
+      margin: 0;
+      max-width: 600px;
+      font-size: 1.08rem;
+      line-height: 1.75;
+      color: var(--muted);
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin-top: 28px;
+    }
+
+    .hero-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 26px;
+      margin-top: 30px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .hero-meta strong {
+      display: block;
+      color: var(--text);
+      font-size: 1.5rem;
+      line-height: 1.1;
+    }
+
+    .hero-card {
+      position: relative;
+      background: linear-gradient(135deg, #111827 0%, #0f172a 38%, #1e293b 100%);
+      border-radius: 28px;
+      padding: 22px;
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(148, 163, 184, 0.22);
+    }
+
+    .dashboard-card {
+      position: relative;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 22px;
+      padding: 22px;
+      overflow: hidden;
+    }
+
+    .status-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 0.86rem;
+    }
+
+    .live-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #34d399;
+      box-shadow: 0 0 18px rgba(52, 211, 153, 0.8);
+    }
+
+    .score-box {
+      background: linear-gradient(135deg, rgba(147, 197, 253, 0.18), rgba(192, 132, 252, 0.18));
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 20px;
+      padding: 18px;
+    }
+
+    .score-box h3 {
+      margin: 0 0 14px;
+      color: rgba(255, 255, 255, 0.72);
+      font-size: 0.85rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .score-value {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      margin-bottom: 18px;
+    }
+
+    .score-value strong {
+      font-size: clamp(2.2rem, 3vw, 3.2rem);
+      color: white;
+      letter-spacing: -0.06em;
+    }
+
+    .score-value span {
+      color: #a5b4fc;
+      font-weight: 700;
+    }
+
+    .bars {
+      display: flex;
+      align-items: end;
+      gap: 10px;
+      height: 110px;
+      margin-top: 20px;
+    }
+
+    .bars span {
+      display: block;
+      width: 100%;
+      background: linear-gradient(180deg, #8b5cf6 0%, #4f76ff 100%);
+      border-radius: 999px 999px 0 0;
+    }
+
+    .bars span:nth-child(1) {
+      height: 42%;
+    }
+
+    .bars span:nth-child(2) {
+      height: 62%;
+    }
+
+    .bars span:nth-child(3) {
+      height: 52%;
+    }
+
+    .bars span:nth-child(4) {
+      height: 84%;
+    }
+
+    .bars span:nth-child(5) {
+      height: 94%;
+    }
+
+    .bars span:nth-child(6) {
+      height: 76%;
+    }
+
+    .mini-panel {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 18px;
+    }
+
+    .mini-stat {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 16px;
+      color: rgba(255, 255, 255, 0.78);
+    }
+
+    .mini-stat strong {
+      display: block;
+      margin-top: 6px;
+      font-size: 1.3rem;
+      color: white;
+    }
+
+    section {
+      padding: 36px 0;
+    }
+
+    .section-heading {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 30px;
+    }
+
+    .section-heading h2 {
+      margin: 0;
+      font-size: clamp(2rem, 2vw, 2.7rem);
+      letter-spacing: -0.05em;
+    }
+
+    .section-heading p {
+      margin: 0;
+      max-width: 580px;
+      color: var(--muted);
+    }
+
+    .logos {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(120px, 1fr));
+      gap: 18px;
+      margin-top: 8px;
+    }
+
+    .logo-pill {
+      display: grid;
+      place-items: center;
+      padding: 0.8rem 1rem;
+      background: rgba(255, 255, 255, 0.72);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      color: #64748b;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .stat-grid,
+    .feature-grid,
+    .steps-grid,
+    .impact-grid,
+    .pricing-grid,
+    .testimonial-grid {
+      display: grid;
+      gap: 22px;
+    }
+
+    .stat-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .feature-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .steps-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .impact-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .pricing-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .testimonial-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.84);
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      border-radius: 22px;
+      padding: 24px;
+      box-shadow: 0 8px 22px rgba(15, 23, 42, 0.04);
+    }
+
+    .stat-card strong {
+      display: block;
+      font-size: clamp(2rem, 3vw, 2.8rem);
+      letter-spacing: -0.05em;
+      margin-bottom: 8px;
+    }
+
+    .stat-card span,
+    .feature-card p,
+    .step-card p,
+    .impact-card p,
+    .price-card p,
+    .testimonial-card p {
+      color: var(--muted);
+    }
+
+    .icon-box {
+      display: inline-grid;
+      place-items: center;
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, rgba(79, 118, 255, 0.12), rgba(139, 92, 246, 0.12));
+      color: var(--primary);
+      font-size: 1.5rem;
+      margin-bottom: 18px;
+    }
+
+    .feature-card h3,
+    .step-card h3,
+    .impact-card h3,
+    .price-card h3,
+    .testimonial-card h3 {
+      margin: 0 0 10px;
+      font-size: 1.32rem;
+    }
+
+    .step-number {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      margin-bottom: 14px;
+      background: linear-gradient(135deg, rgba(79, 118, 255, 0.12), rgba(139, 92, 246, 0.12));
+      color: var(--primary);
+      font-weight: 800;
+    }
+
+    .impact-card {
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(238, 244, 255, 0.85));
+    }
+
+    .price-card {
+      position: relative;
+      background: white;
+    }
+
+    .price-card.featured {
+      background: linear-gradient(180deg, rgba(56, 88, 217, 0.08), rgba(255, 255, 255, 1));
+      border-color: rgba(56, 88, 217, 0.28);
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.4rem 0.7rem;
+      border-radius: 999px;
+      background: rgba(22, 163, 74, 0.1);
+      color: var(--success);
+      font-size: 0.74rem;
+      font-weight: 700;
+      margin-bottom: 18px;
+    }
+
+    .price {
+      display: flex;
+      align-items: end;
+      gap: 8px;
+      margin: 18px 0;
+    }
+
+    .price strong {
+      font-size: 2.8rem;
+      letter-spacing: -0.06em;
+    }
+
+    .price span {
+      color: var(--muted);
+    }
+
+    .features-list,
+    .check-list {
+      display: grid;
+      gap: 10px;
+      list-style: none;
+      padding: 0;
+      margin: 18px 0 0;
+      color: var(--muted);
+    }
+
+    .features-list li,
+    .check-list li {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .features-list li::before,
+    .check-list li::before {
+      content: "✓";
+      display: inline-grid;
+      place-items: center;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: rgba(22, 163, 74, 0.12);
+      color: var(--success);
+      font-size: 0.8rem;
+      font-weight: 800;
+    }
+
+    .cta-band {
+      margin-top: 40px;
+      padding: 28px;
+      border-radius: 28px;
+      background: linear-gradient(135deg, #0f172a, #16263c 48%, #1e293b);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .cta-band h3 {
+      margin: 0 0 6px;
+      font-size: clamp(1.8rem, 2vw, 2.5rem);
+      letter-spacing: -0.05em;
+    }
+
+    .cta-band p {
+      margin: 0;
+      color: rgba(255, 255, 255, 0.72);
+    }
+
+    .site-footer {
+      padding: 28px 0 56px;
+      color: var(--muted);
+    }
+
+    .footer-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding-top: 22px;
+      border-top: 1px solid var(--line);
+    }
+
+    @media (max-width: 900px) {
+
+      .hero-grid,
+      .feature-grid,
+      .pricing-grid,
+      .testimonial-grid,
+      .impact-grid,
+      .steps-grid,
+      .stat-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .hero-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 700px) {
+
+      .nav-links {
+        display: none;
+      }
+
+      .nav-links.is-open {
+        position: absolute;
+        top: 78px;
+        left: 16px;
+        right: 16px;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        background: white;
+        border: 1px solid #dfe7f5;
+        border-radius: 16px;
+        padding: 16px;
+        box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+      }
+
+      .nav-actions .btn-secondary {
+        display: none;
+      }
+
+      .nav-toggle {
+        display: inline-grid;
+        place-items: center;
+      }
+
+      .logos,
+      .feature-grid,
+      .pricing-grid,
+      .testimonial-grid,
+      .impact-grid,
+      .steps-grid,
+      .stat-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .section-heading,
+      .cta-band,
+      .footer-wrap {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .cta-band {
+        padding: 22px 18px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="site-header">
+    <div class="container nav">
+      <a class="brand" href="#top" aria-label="Digital Heroes home">
+        <span class="brand-mark">DH</span>
+        <span>Digital Heroes</span>
+      </a>
+
+      <nav class="nav-links" aria-label="Main navigation">
+        <a href="#features">Features</a>
+        <a href="#how-it-works">How it works</a>
+        <a href="#impact">Impact</a>
+        <a href="#pricing">Pricing</a>
+      </nav>
+
+      <div class="nav-actions">
+        <a class="btn btn-secondary" href="#pricing">See plans</a>
+        <a class="btn btn-primary" href="#join">Join now</a>
+        <button class="nav-toggle" aria-label="Toggle navigation">☰</button>
+      </div>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <div class="container hero-grid">
+        <div class="hero-copy">
+          <span class="eyebrow">Golf performance + good causes</span>
+          <h1>Turn every round into real-world impact.</h1>
+          <p>
+            Digital Heroes gives golfers a smarter way to track performance,
+            enter monthly prize draws, and support charities with every milestone.
+          </p>
+
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="#join">Get started</a>
+            <a class="btn btn-secondary" href="#features">Explore features</a>
+          </div>
+
+          <div class="hero-meta">
+            <div>
+              <strong>4.9/5</strong>
+              <span>Player rating</span>
+            </div>
+            <div>
+              <strong>$82k</strong>
+              <span>Raised for charity</span>
+            </div>
+            <div>
+              <strong>12k+</strong>
+              <span>Members tracked</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-card" aria-label="Performance dashboard preview">
+          <div class="dashboard-card">
+            <div class="status-row">
+              <span>Performance dashboard</span>
+              <span class="live-dot" aria-hidden="true"></span>
+            </div>
+
+            <div class="score-box">
+              <h3>Current handicap</h3>
+              <div class="score-value">
+                <strong>8.4</strong>
+                <span>↓ 1.2 this month</span>
+              </div>
+
+              <div class="bars" aria-label="Performance graph">
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+            </div>
+
+            <div class="mini-panel">
+              <div class="mini-stat">
+                <span>Birdies</span>
+                <strong>14</strong>
+              </div>
+              <div class="mini-stat">
+                <span>Draw entries</span>
+                <strong>36</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section aria-label="Trusted by leading golf communities">
+      <div class="container">
+        <div class="logos">
+          <div class="logo-pill">Open Cup</div>
+          <div class="logo-pill">Stroke Lab</div>
+          <div class="logo-pill">Fairway Club</div>
+          <div class="logo-pill">PGA 24</div>
+          <div class="logo-pill">Green Force</div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="container">
+        <div class="section-heading">
+          <h2>Built for players who care about performance and purpose.</h2>
+          <p>
+            Monitor your metrics, join curated draws, and contribute to charity impact through a product designed around
+            accountability and momentum.
+          </p>
+        </div>
+
+        <div class="stat-grid">
+          <div class="card stat-card">
+            <strong>18.6%</strong>
+            <span>Average handicap improvement in 90 days</span>
+          </div>
+          <div class="card stat-card">
+            <strong>350+</strong>
+            <span>Charities supported through monthly draws</span>
+          </div>
+          <div class="card stat-card">
+            <strong>2.4x</strong>
+            <span>Higher engagement during active challenge weeks</span>
+          </div>
+          <div class="card stat-card">
+            <strong>96%</strong>
+            <span>Member retention after year one</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="features">
+      <div class="container">
+        <div class="section-heading">
+          <h2>Everything your golf community needs.</h2>
+          <p>
+            Digital Heroes combines personal analytics, digital rewards, and a strong social cause layer in one simple
+            experience.
+          </p>
+        </div>
+
+        <div class="feature-grid">
+          <article class="card feature-card">
+            <div class="icon-box">📈</div>
+            <h3>Performance tracking</h3>
+            <p>Log scores, trend your progress, and identify repeatable gains across driving, approach play, and
+              putting.</p>
+          </article>
+
+          <article class="card feature-card">
+            <div class="icon-box">🏆</div>
+            <h3>Monthly draws</h3>
+            <p>Unlock prize draws based on milestones and participation so every athlete has a shot at recognition.</p>
+          </article>
+
+          <article class="card feature-card">
+            <div class="icon-box">🤝</div>
+            <h3>Charity impact</h3>
+            <p>See where contributions go and highlight how your club’s activity translates into measurable community
+              support.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="how-it-works">
+      <div class="container">
+        <div class="section-heading">
+          <h2>Simple flow. Powerful results.</h2>
+          <p>From sign-up to impact reporting, the system is designed to stay easy for members and useful for operators.
+          </p>
+        </div>
+
+        <div class="steps-grid">
+          <div class="card step-card">
+            <div class="step-number">1</div>
+            <h3>Create your profile</h3>
+            <p>Join a club or league, connect your scores, and personalize your goals.</p>
+          </div>
+          <div class="card step-card">
+            <div class="step-number">2</div>
+            <h3>Track each round</h3>
+            <p>Record scorecards, stats, improvements, and participation milestones in seconds.</p>
+          </div>
+          <div class="card step-card">
+            <div class="step-number">3</div>
+            <h3>Drive impact together</h3>
+            <p>Enter draws, unlock rewards, and watch the charity pool grow with every challenge.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="impact">
+      <div class="container">
+        <div class="section-heading">
+          <h2>Impact that feels visible.</h2>
+          <p>Every participation metric feeds a transparent story of growth, giving, and collective momentum.</p>
+        </div>
+
+        <div class="impact-grid">
+          <div class="card impact-card">
+            <h3>Funds raised</h3>
+            <p>$82,400 donated to community programmes and youth golf scholarships in the last 12 months.</p>
+          </div>
+          <div class="card impact-card">
+            <h3>Volunteer hours</h3>
+            <p>4,800 hours logged across clinics, tournaments, and mentorship sessions for local partners.</p>
+          </div>
+          <div class="card impact-card">
+            <h3>Member momentum</h3>
+            <p>86% of members report that tracking and incentives improved consistency in their weekly practice.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="pricing">
+      <div class="container">
+        <div class="section-heading">
+          <h2>Choose a plan that fits your club.</h2>
+          <p>Launch quickly with a flexible membership model that scales from a local group to a full golf community.
+          </p>
+        </div>
+
+        <div class="pricing-grid">
+          <div class="card price-card">
+            <div class="tag">Starter</div>
+            <h3>Club essentials</h3>
+            <p>Perfect for smaller communities beginning their digital transformation.</p>
+            <div class="price">
+              <strong>$29</strong>
+              <span>/member</span>
+            </div>
+            <ul class="features-list">
+              <li>Score tracking</li>
+              <li>Basic dashboard</li>
+              <li>Monthly draw access</li>
+            </ul>
+          </div>
+
+          <div class="card price-card featured">
+            <div class="tag">Popular</div>
+            <h3>Growth</h3>
+            <p>Built for clubs ready to drive engagement and visibility across performance trends.</p>
+            <div class="price">
+              <strong>$59</strong>
+              <span>/member</span>
+            </div>
+            <ul class="features-list">
+              <li>Everything in Starter</li>
+              <li>Advanced analytics</li>
+              <li>Charity reporting</li>
+            </ul>
+          </div>
+
+          <div class="card price-card">
+            <div class="tag">Premium</div>
+            <h3>Championship</h3>
+            <p>For high-volume clubs, sponsors, and elite communities that need deeper support.</p>
+            <div class="price">
+              <strong>$99</strong>
+              <span>/member</span>
+            </div>
+            <ul class="features-list">
+              <li>White-label experience</li>
+              <li>Custom competitions</li>
+              <li>Priority support</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section aria-label="Member testimonials">
+      <div class="container">
+        <div class="section-heading">
+          <h2>Players love the momentum.</h2>
+          <p>Digital Heroes blends accountability, achievement, and community into a routine members actually enjoy.</p>
+        </div>
+
+        <div class="testimonial-grid">
+          <div class="card testimonial-card">
+            <h3>Emma L.</h3>
+            <p>“The score trends are easy to understand, and the charity impact makes every round feel more meaningful.”
+            </p>
+          </div>
+          <div class="card testimonial-card">
+            <h3>Marcus T.</h3>
+            <p>“We used to run draw entries manually. Now everything feels more professional and more engaging for the
+              club.”</p>
+          </div>
+          <div class="card testimonial-card">
+            <h3>Priya S.</h3>
+            <p>“The mix of personal improvement tracking and community giving is exactly what golfers were missing.”</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="join">
+      <div class="container">
+        <div class="cta-band">
+          <div>
+            <h3>Ready to launch a stronger golf community?</h3>
+            <p>Bring performance, rewards, and purpose into one connected experience.</p>
+          </div>
+          <a class="btn btn-primary" href="mailto:hello@digitalheroes.app">Contact sales</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-wrap">
+      <div class="brand">
+        <span class="brand-mark">DH</span>
+        <span>Digital Heroes</span>
+      </div>
+      <div>
+        <span>© <span id="year"></span> Digital Heroes. Built for better golf and bigger impact.</span><br />
+        <span>Created by Hrshit Kumar • <a
+            href="mailto:harshitkumar3127@gmail.com">harshitkumar3127@gmail.com</a></span>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const toggleButton = document.querySelector('.nav-toggle');
+    const navLinks = document.querySelector('.nav-links');
+    const navActions = document.querySelector('.nav-actions');
+
+    const syncMenuState = (isOpen) => {
+      if (!navLinks || !toggleButton) return;
+
+      navLinks.classList.toggle('is-open', isOpen);
+      toggleButton.setAttribute('aria-expanded', String(isOpen));
+
+      if (window.innerWidth <= 700) {
+        const secondary = navActions ? navActions.querySelector('.btn-secondary') : null;
+        if (secondary) {
+          secondary.style.display = isOpen ? 'inline-flex' : 'none';
+        }
+      }
+    };
+
+    if (toggleButton && navLinks) {
+      toggleButton.setAttribute('aria-expanded', 'false');
+      toggleButton.addEventListener('click', () => {
+        const isOpen = !navLinks.classList.contains('is-open');
+        syncMenuState(isOpen);
+      });
+    }
+
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 700) {
+        navLinks?.classList.remove('is-open');
+        toggleButton?.setAttribute('aria-expanded', 'false');
+      }
+    });
+
+    const yearNode = document.getElementById('year');
+    if (yearNode) yearNode.textContent = new Date().getFullYear();
+  </script>
+</body>
+
+</html>
