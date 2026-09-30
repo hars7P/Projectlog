@@ -1,1 +1,2 @@
-# Phase 1 uses only the Python standard library.
+python-dotenv>=1.0,<2.0
+sounddevice[numpy]>=0.5.6,<1.0
