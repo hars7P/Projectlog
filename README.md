@@ -46,7 +46,22 @@ Check whether the key is configured without displaying it:
 python3 main.py --check-config
 ```
 
-Voice mode records up to six seconds from the microphone, sends the recording to OpenAI for transcription, sends the resulting text through its normal AI conversation, and speaks the reply using macOS's built-in `say` command. Audio is sent to OpenAI for transcription and is not saved to disk. Allow microphone access for Terminal or VS Code in System Settings > Privacy & Security > Microphone. If access is denied, grant permission and select voice mode again.
+Voice mode records up to six seconds from the microphone, tries OpenAI transcription, sends the resulting text through its normal AI conversation, and speaks the reply using macOS's built-in `say` command. If OpenAI is unavailable due to a rate limit, server error, timeout, or network failure, JARVIS uses the local model below. Local transcription does not need an API key and does not upload audio. A configured OpenAI key is still needed for AI responses from `brain.ask()`.
+
+Allow microphone access for Terminal or VS Code in System Settings > Privacy & Security > Microphone. If access is denied, grant permission and select voice mode again.
+
+### Set up local transcription
+
+Install the Python dependencies, then download and extract the small English Vosk model into the project `models` directory:
+
+```sh
+python -m pip install -r requirements.txt
+mkdir -p models
+curl -L https://alphacephei.com/vosk/models/vosk-model-small-en-us-0.15.zip -o /tmp/vosk-model-small-en-us-0.15.zip
+unzip -q /tmp/vosk-model-small-en-us-0.15.zip -d models
+```
+
+The model directory should be `models/vosk-model-small-en-us-0.15`. Model files are ignored by Git. To use a model in another location, set `JARVIS_VOSK_MODEL_PATH` to its path; relative paths are resolved from the project root. If the package or model is missing when local fallback is needed, JARVIS reports the setup step instead of hiding the transcription failure.
 
 ## Test
 

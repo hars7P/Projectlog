@@ -9,7 +9,14 @@ from http.client import HTTPMessage
 from unittest.mock import Mock, patch
 from urllib.error import HTTPError
 
-from voice import VoiceError, listen_and_transcribe, listen_for_audio, speak_text, transcribe_audio
+from voice import (
+	RecoverableTranscriptionError,
+	VoiceError,
+	listen_and_transcribe,
+	listen_for_audio,
+	speak_text,
+	transcribe_audio,
+)
 
 
 class FakeRecording:
@@ -48,12 +55,45 @@ class VoiceTests(unittest.TestCase):
 		self.assertIn(b'filename="speech.wav"', request.data)
 		self.assertIn(b"fake wav data", request.data)
 
-	def test_missing_key_does_not_record_microphone(self):
-		with patch("voice.listen_for_audio") as record:
-			with self.assertRaisesRegex(VoiceError, "No valid OpenAI API key"):
-				listen_and_transcribe(api_key=None)
+	def test_missing_key_uses_local_transcription_without_openai(self):
+		with patch("voice.listen_for_audio", return_value=b"recorded wav"):
+			with patch("voice.transcribe_audio") as openai_transcribe:
+				with patch("voice.transcribe_wav", return_value="local transcript") as local_transcribe:
+					transcript = listen_and_transcribe(api_key=None)
 
-		record.assert_not_called()
+		self.assertEqual(transcript, "local transcript")
+		openai_transcribe.assert_not_called()
+		local_transcribe.assert_called_once_with(b"recorded wav")
+
+	def test_blank_key_uses_local_transcription(self):
+		with patch("voice.listen_for_audio", return_value=b"recorded wav"):
+			with patch("voice.transcribe_audio") as openai_transcribe:
+				with patch("voice.transcribe_wav", return_value="local transcript"):
+					transcript = listen_and_transcribe(api_key=" ")
+
+		self.assertEqual(transcript, "local transcript")
+		openai_transcribe.assert_not_called()
+
+	def test_rate_limit_falls_back_with_the_same_recording(self):
+		with patch("voice.listen_for_audio", return_value=b"recorded wav"):
+			with patch(
+				"voice.transcribe_audio",
+				side_effect=RecoverableTranscriptionError("OpenAI returned HTTP 429"),
+			):
+				with patch("voice.transcribe_wav", return_value="local transcript") as local_transcribe:
+					transcript = listen_and_transcribe("sk-test-key")
+
+		self.assertEqual(transcript, "local transcript")
+		local_transcribe.assert_called_once_with(b"recorded wav")
+
+	def test_authentication_failure_does_not_fall_back_locally(self):
+		with patch("voice.listen_for_audio", return_value=b"recorded wav"):
+			with patch("voice.transcribe_audio", side_effect=VoiceError("HTTP 401")):
+				with patch("voice.transcribe_wav") as local_transcribe:
+					with self.assertRaisesRegex(VoiceError, "HTTP 401"):
+						listen_and_transcribe("sk-test-key")
+
+		local_transcribe.assert_not_called()
 
 	def test_missing_microphone_support_is_reported_without_crashing(self):
 		with patch("voice.importlib.import_module", side_effect=ImportError("missing audio module")):
@@ -96,6 +136,7 @@ class VoiceTests(unittest.TestCase):
 
 		self.assertIn("HTTP 429", str(raised.exception))
 		self.assertIn("quota is exhausted", str(raised.exception))
+		self.assertIsInstance(raised.exception, RecoverableTranscriptionError)
 		self.assertNotIn("private service response", str(raised.exception))
 
 	def test_invalid_transcription_shape_reports_unrecognized_speech(self):

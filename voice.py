@@ -15,6 +15,7 @@ from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 from config import is_valid_openai_api_key
+from local_stt import LocalTranscriptionError, transcribe_wav
 
 
 _TRANSCRIPTION_API_URL = "https://api.openai.com/v1/audio/transcriptions"
@@ -42,6 +43,10 @@ class _SoundDevice(Protocol):
 
 class VoiceError(Exception):
 	"""A safe, user-facing error from a voice operation."""
+
+
+class RecoverableTranscriptionError(VoiceError):
+	"""A temporary provider failure that can use local transcription."""
 
 
 def listen_for_audio(duration_seconds: int = 6) -> bytes:
@@ -91,17 +96,32 @@ def listen_and_transcribe(
 	model: str = _DEFAULT_TRANSCRIPTION_MODEL,
 	duration_seconds: int = 6,
 ) -> str:
-	"""Record speech and return its OpenAI transcription."""
-	if not (api_key or "").strip():
-		raise VoiceError(
-			"No valid OpenAI API key is configured. Add a real OpenAI API key to the application configuration."
-		)
-	if not is_valid_openai_api_key(api_key):
+	"""Record speech, preferring OpenAI and falling back to local recognition."""
+	if (api_key or "").strip() and not is_valid_openai_api_key(api_key):
 		raise VoiceError(
 			"The configured OpenAI API key is invalid. Add a real OpenAI API key to the application configuration."
 		)
 	audio_data = listen_for_audio(duration_seconds=duration_seconds)
-	return transcribe_audio(audio_data, api_key or "", model)
+	if not (api_key or "").strip():
+		logging.getLogger(__name__).info(
+			"OpenAI API key is not configured; using local speech recognition"
+		)
+		return _transcribe_locally(audio_data)
+	try:
+		return transcribe_audio(audio_data, api_key or "", model)
+	except RecoverableTranscriptionError as error:
+		logging.getLogger(__name__).warning(
+			"OpenAI transcription is temporarily unavailable (%s); using local speech recognition",
+			type(error).__name__,
+		)
+		return _transcribe_locally(audio_data)
+
+
+def _transcribe_locally(audio_data: bytes) -> str:
+	try:
+		return transcribe_wav(audio_data)
+	except LocalTranscriptionError as error:
+		raise VoiceError(str(error)) from None
 
 
 def transcribe_audio(audio_data: bytes, api_key: str, model: str) -> str:
@@ -155,13 +175,18 @@ def transcribe_audio(audio_data: bytes, api_key: str, model: str) -> str:
 		logging.getLogger(__name__).warning(
 			"OpenAI transcription returned HTTP status %s", status_code
 		)
-		raise VoiceError(
+		error_type = (
+			RecoverableTranscriptionError
+			if status_code in {408, 429} or 500 <= status_code <= 599
+			else VoiceError
+		)
+		raise error_type(
 			f"OpenAI transcription failed with HTTP {status_code}: "
 			f"{_transcription_error_message(status_code)}"
 		) from None
 	except (URLError, TimeoutError, OSError):
 		logging.getLogger(__name__).warning("Could not connect to OpenAI transcription")
-		raise VoiceError(
+		raise RecoverableTranscriptionError(
 			"I couldn't connect to OpenAI for transcription. Check your internet connection and try again."
 		) from None
 	except (UnicodeDecodeError, json.JSONDecodeError):
