@@ -5,6 +5,7 @@ import logging
 import re
 from typing import Optional
 
+import memory
 from config import Config, configure_logging
 from brain import BrainError, JarvisBrain
 from memory import MemoryStore, MemoryStoreError, parse_memory_request
@@ -108,6 +109,7 @@ def run(config: Config) -> None:
 			voice_mode = False
 			print(f"{config.name}: Text mode on.")
 			continue
+		intent = memory.parse_memory_intent(command)
 		if normalized_command.casefold() in {"clear my memories", "clear memories", "clear my memory"}:
 			print(f"{config.name}: Clear all saved memories? Type 'yes' to confirm.")
 			try:
@@ -120,6 +122,39 @@ def run(config: Config) -> None:
 				continue
 			deleted = memory_store.clear_memories()
 			print(f"{config.name}: Cleared {deleted} saved memory(s).")
+			continue
+		if intent and intent.get("action") == "save":
+			memory_text = str(intent.get("content", "")).strip()
+			if not memory_text:
+				print(f"{config.name}: I didn't catch anything to remember.")
+				continue
+			try:
+				stored = memory_store.add_memory(memory_text)
+			except MemoryStoreError as error:
+				print(f"{config.name}: {error}")
+				continue
+			print(f"{config.name}: Saved memory: {stored}")
+			continue
+		if intent and intent.get("action") == "retrieve":
+			query = str(intent.get("query", "")).strip()
+			memories = memory_store.get_relevant_memories(query or None)
+			if not memories:
+				print(f"{config.name}: I don't have any saved memories yet.")
+				continue
+			print(f"{config.name}: I remember: {', '.join(memories)}")
+			continue
+		if intent and intent.get("action") == "delete":
+			target = str(intent.get("target") or intent.get("content") or "").strip()
+			if target in {"", "latest"}:
+				if memory_store.delete_latest_memory():
+					print(f"{config.name}: I forgot the most recent memory.")
+				else:
+					print(f"{config.name}: I don't have a recent memory to forget.")
+				continue
+			if memory_store.delete_memory(target):
+				print(f"{config.name}: I forgot that memory.")
+			else:
+				print(f"{config.name}: I couldn't find that memory.")
 			continue
 		if normalized_command.casefold().startswith("remember"):
 			memory_text = parse_memory_request(command)

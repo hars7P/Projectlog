@@ -3,14 +3,15 @@
 import io
 import json
 import unittest
+from http.client import HTTPMessage
 from urllib.error import HTTPError, URLError
 from unittest.mock import Mock, patch
 
 from brain import BrainError, JarvisBrain
 
 
-def _response(text):
-	body = {
+def _response(text: str) -> io.BytesIO:
+	body: dict[str, object] = {
 		"output": [
 			{
 				"type": "message",
@@ -75,7 +76,7 @@ class JarvisBrainTests(unittest.TestCase):
 			"https://api.openai.com/v1/responses",
 			401,
 			"Unauthorized",
-			None,
+			HTTPMessage(),
 			io.BytesIO(b"authentication failed"),
 		)
 		brain = JarvisBrain(api_key=secret, model="test-model")

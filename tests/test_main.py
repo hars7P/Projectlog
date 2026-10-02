@@ -6,7 +6,8 @@ from contextlib import redirect_stdout
 from unittest.mock import Mock, patch
 
 from config import Config
-from main import _safe_diagnostic, main, run
+import main as main_module
+from main import main, run
 from voice import VoiceError
 
 
@@ -89,7 +90,7 @@ class MainVoiceModeTests(unittest.TestCase):
 		self.assertIn("Switching to text mode.", output.getvalue())
 
 	def test_safe_diagnostic_redacts_credentials(self):
-		diagnostic = _safe_diagnostic(
+		diagnostic = getattr(main_module, "_safe_diagnostic")(
 			"voice.listen_and_transcribe",
 			ValueError("Authorization: Bearer sk-secret-token OPENAI_API_KEY=top-secret-key"),
 		)
@@ -116,23 +117,30 @@ class MainVoiceModeTests(unittest.TestCase):
 		brain.ask.return_value = "Hello."
 		config = Config(openai_api_key="sk-test-key")
 		output = io.StringIO()
+		def save_memory(value: str) -> str:
+			return value
+
+		def delete_memory(value: str) -> bool:
+			return value == "I am learning Python"
 
 		with patch("main.JarvisBrain", return_value=brain):
 			with patch("main.MemoryStore") as memory_store:
-				memory_store.return_value.add_memory.side_effect = lambda value: value
-				memory_store.return_value.get_relevant_memories.return_value = [
-					"my name is Harshit",
-					"I am learning Python",
+				memory_store.return_value.add_memory.side_effect = save_memory
+				memory_store.return_value.get_relevant_memories.side_effect = [
+					["my name is Harshit"],
+					["I am learning Python"],
+					[],
 				]
 				memory_store.return_value.clear_memories.return_value = 1
-				memory_store.return_value.delete_memory.side_effect = lambda value: value == "I am learning Python"
-				with patch("builtins.input", side_effect=["1", "Remember that my name is Harshit.", "Remember that I am learning Python.", "What do you remember about me?", "Forget that I am learning Python.", "exit"]):
+				memory_store.return_value.delete_memory.side_effect = delete_memory
+				with patch("builtins.input", side_effect=["1", "Remember that my name is Harshit.", "What do you know about me?", "Keep in mind that I am learning Python.", "What do you remember about Python?", "Forget that I am learning Python.", "exit"]):
 					with redirect_stdout(output):
 						run(config)
 
 		self.assertIn("Saved memory: my name is Harshit", output.getvalue())
 		self.assertIn("Saved memory: I am learning Python", output.getvalue())
-		self.assertIn("I remember: my name is Harshit, I am learning Python", output.getvalue())
+		self.assertIn("I remember: my name is Harshit", output.getvalue())
+		self.assertIn("I remember: I am learning Python", output.getvalue())
 		self.assertIn("I forgot that memory.", output.getvalue())
 
 

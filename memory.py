@@ -5,7 +5,7 @@ from __future__ import annotations
 import re
 import sqlite3
 from pathlib import Path
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 
 class MemoryStoreError(ValueError):
@@ -72,10 +72,16 @@ class MemoryStore:
         if not query_terms:
             return memories[-limit:]
 
+        expanded_terms = set(query_terms)
+        if "me" in expanded_terms or "my" in expanded_terms or "i" in expanded_terms:
+            expanded_terms |= {"me", "my", "i"}
+        if "you" in expanded_terms or "your" in expanded_terms:
+            expanded_terms |= {"you", "your"}
+
         relevant: List[str] = []
         for memory in memories:
             memory_text = memory.casefold()
-            if any(term in memory_text for term in query_terms):
+            if any(term in memory_text for term in expanded_terms):
                 relevant.append(memory)
         if not relevant:
             return []
@@ -127,4 +133,88 @@ def parse_memory_request(command: str) -> Optional[str]:
         if remainder.casefold().startswith("this"):
             remainder = remainder[4:].strip()
         return remainder.strip()
+    return None
+
+
+def parse_memory_intent(command: str) -> Optional[Dict[str, str]]:
+    """Recognize save/retrieve/delete memory intent safely without semantic search."""
+    text = command.strip()
+    if not text:
+        return None
+    lowered = text.casefold().rstrip(" .!?")
+
+    save_prefixes = (
+        "remember ",
+        "remember that ",
+        "keep in mind ",
+        "keep in mind that ",
+        "save this ",
+        "save this:",
+        "save that ",
+        "save that:",
+        "save ",
+        "save the fact that ",
+    )
+    for prefix in save_prefixes:
+        if lowered.casefold().startswith(prefix):
+            remainder = text[len(prefix) :].strip()
+            remainder = remainder.lstrip(":")
+            remainder = remainder.strip()
+            if remainder.casefold().startswith("that "):
+                remainder = remainder[5:].strip()
+            if remainder.casefold().startswith("this "):
+                remainder = remainder[5:].strip()
+            if remainder.casefold().startswith("the fact that "):
+                remainder = remainder[14:].strip()
+            remainder = remainder.rstrip(" .!?")
+            if remainder:
+                return {"action": "save", "content": remainder}
+            return None
+
+    if lowered.casefold().startswith("what do you know about "):
+        return {"action": "retrieve", "query": lowered[len("what do you know about ") :].strip()}
+    if lowered.casefold().startswith("what do you remember about "):
+        return {"action": "retrieve", "query": lowered[len("what do you remember about ") :].strip()}
+    if lowered.casefold().startswith("do you remember anything about "):
+        return {"action": "retrieve", "query": lowered[len("do you remember anything about ") :].strip()}
+    if lowered.casefold().startswith("tell me what you remember"):
+        return {"action": "retrieve", "query": ""}
+    if lowered.casefold().startswith("what do you remember"):
+        return {"action": "retrieve", "query": ""}
+    if lowered.casefold().startswith("what do you know"):
+        return {"action": "retrieve", "query": ""}
+
+    delete_prefixes = (
+        "forget ",
+        "forget that ",
+        "remove ",
+        "remove that ",
+        "delete ",
+        "delete that ",
+    )
+    for prefix in delete_prefixes:
+        if lowered.casefold().startswith(prefix):
+            remainder = text[len(prefix) :].strip()
+            remainder = remainder.rstrip(" .!?")
+            if not remainder:
+                return {"action": "delete", "target": "latest"}
+            if remainder.casefold() in {"memory", "that memory", "this memory", "it"}:
+                return {"action": "delete", "target": "latest"}
+            if remainder.casefold() == "the last thing you remembered":
+                return {"action": "delete", "target": "latest"}
+            if remainder.casefold().startswith("that "):
+                remainder = remainder[5:].strip()
+            if remainder.casefold().startswith("this "):
+                remainder = remainder[5:].strip()
+            if remainder.casefold() in {"memory", "that memory", "this memory", "it"}:
+                return {"action": "delete", "target": "latest"}
+            if remainder:
+                return {"action": "delete", "content": remainder.rstrip(" .!?")}
+            return {"action": "delete", "target": "latest"}
+
+    if lowered.casefold() == "forget the last thing you remembered":
+        return {"action": "delete", "target": "latest"}
+    if lowered.casefold() in {"remove that memory", "delete that memory", "forget that memory", "forget memory"}:
+        return {"action": "delete", "target": "latest"}
+
     return None

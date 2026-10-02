@@ -1,11 +1,10 @@
 """Offline tests for JARVIS persistent local memory."""
 
-import os
 import tempfile
 import unittest
 from pathlib import Path
 
-from memory import MemoryStore, MemoryStoreError, parse_memory_request
+from memory import MemoryStore, MemoryStoreError, parse_memory_intent, parse_memory_request
 
 
 class MemoryStoreTests(unittest.TestCase):
@@ -23,6 +22,24 @@ class MemoryStoreTests(unittest.TestCase):
             "my name is Harshit.",
         )
 
+    def test_parse_memory_intent_handles_natural_language(self):
+        self.assertEqual(
+            parse_memory_intent("Keep in mind that I am learning Python."),
+            {"action": "save", "content": "I am learning Python"},
+        )
+        self.assertEqual(
+            parse_memory_intent("What do you know about me?"),
+            {"action": "retrieve", "query": "me"},
+        )
+        self.assertEqual(
+            parse_memory_intent("Do you remember anything about Python?"),
+            {"action": "retrieve", "query": "python"},
+        )
+        self.assertEqual(
+            parse_memory_intent("Forget the last thing you remembered."),
+            {"action": "delete", "target": "latest"},
+        )
+
     def test_add_memory_and_list_memories(self):
         self.store.add_memory("my name is Harshit")
         self.store.add_memory("I like tea")
@@ -36,6 +53,13 @@ class MemoryStoreTests(unittest.TestCase):
 
         relevant = self.store.get_relevant_memories("Harshit")
         self.assertEqual(relevant, ["my name is Harshit"])
+
+    def test_get_relevant_memories_accepts_me_and_my_variants(self):
+        self.store.add_memory("my favorite language is Python")
+        self.store.add_memory("I prefer tea")
+
+        relevant = self.store.get_relevant_memories("me")
+        self.assertEqual(relevant, ["my favorite language is Python", "I prefer tea"])
 
     def test_delete_memory_removes_specific_memory(self):
         self.store.add_memory("my name is Harshit")

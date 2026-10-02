@@ -5,6 +5,7 @@ import json
 import sys
 import unittest
 import wave
+from http.client import HTTPMessage
 from unittest.mock import Mock, patch
 from urllib.error import HTTPError
 
@@ -16,7 +17,7 @@ class FakeRecording:
 		return b"\x00\x00" * 16000
 
 
-def _transcription_response(text):
+def _transcription_response(text: str) -> io.BytesIO:
 	return io.BytesIO(json.dumps({"text": text}).encode("utf-8"))
 
 
@@ -79,7 +80,7 @@ class VoiceTests(unittest.TestCase):
 			"https://api.openai.com/v1/audio/transcriptions",
 			401,
 			"Unauthorized",
-			None,
+			HTTPMessage(),
 			io.BytesIO(b"authentication failed"),
 		)
 		with patch("voice.urlopen", side_effect=api_error):
