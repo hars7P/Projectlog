@@ -62,6 +62,40 @@ class JarvisBrainTests(unittest.TestCase):
 		self.assertEqual(payload["input"][-1]["content"], "What is my name?")
 		memory_store.get_relevant_memories.assert_called_once_with("What is my name?", limit=3)
 
+	def test_omits_memory_context_when_no_memories_match(self):
+		memory_store = Mock()
+		memory_store.get_relevant_memories.return_value = []
+		brain = JarvisBrain(api_key="sk-test-key", model="test-model", memory_store=memory_store)
+		with patch("brain.urlopen", return_value=_response("Hello there.")) as send:
+			answer = brain.ask("How are you?")
+
+		request = send.call_args.args[0]
+		payload = json.loads(request.data.decode("utf-8"))
+		self.assertEqual(answer, "Hello there.")
+		self.assertEqual(payload["input"], [{"role": "user", "content": "How are you?"}])
+
+	def test_deduplicates_memory_context_preserving_order(self):
+		memory_store = Mock()
+		memory_store.get_relevant_memories.return_value = [
+			"my name is Harshit",
+			"my name is Harshit",
+			"I prefer tea",
+			"I prefer tea",
+		]
+		brain = JarvisBrain(api_key="sk-test-key", model="test-model", memory_store=memory_store)
+		with patch("brain.urlopen", return_value=_response("Hello there.")) as send:
+			brain.ask("What do you know about me?")
+
+		request = send.call_args.args[0]
+		payload = json.loads(request.data.decode("utf-8"))
+		self.assertEqual(
+			payload["input"],
+			[
+				{"role": "user", "content": "Relevant memories:\n- my name is Harshit\n- I prefer tea"},
+				{"role": "user", "content": "What do you know about me?"},
+			],
+		)
+
 	def test_missing_key_does_not_send_request(self):
 		brain = JarvisBrain(api_key=None, model="test-model")
 		with patch("brain.urlopen") as send:

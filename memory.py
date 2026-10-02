@@ -5,7 +5,23 @@ from __future__ import annotations
 import re
 import sqlite3
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Set
+
+
+_MEMORY_QUERY_STOP_WORDS = {
+    "a", "about", "an", "and", "are", "as", "at", "be", "been", "being",
+    "but", "by", "can", "could", "did", "do", "does", "for", "from",
+    "had", "has", "have", "how", "i", "in", "is", "it", "me", "might",
+    "my", "of", "on", "or", "please", "should", "that", "the", "their",
+    "them", "there", "these", "they", "this", "those", "to", "was", "what",
+    "when", "where", "which", "who", "why", "will", "with", "would", "you",
+    "your", "yours", "anything", "know", "remember", "tell",
+}
+_PROFILE_QUERY_WORDS = _MEMORY_QUERY_STOP_WORDS | {"me", "my", "i"}
+
+
+def _memory_search_tokens(text: str) -> Set[str]:
+    return set(re.findall(r"[A-Za-z0-9']+", text.casefold()))
 
 
 class MemoryStoreError(ValueError):
@@ -44,10 +60,29 @@ class MemoryStore:
             raise MemoryStoreError("Please provide a memory to save.")
         with self._connect() as connection:
             connection.execute(
-                "INSERT INTO memories (content) VALUES (?)",
-                (memory,),
+                """
+                INSERT INTO memories (content)
+                SELECT ?
+                WHERE NOT EXISTS (
+                    SELECT 1 FROM memories WHERE content = ?
+                )
+                """,
+                (memory, memory),
             )
         return memory
+
+    def cleanup_duplicate_memories(self) -> int:
+        """Remove older rows with identical content, preserving the newest ID."""
+        with self._connect() as connection:
+            cursor = connection.execute(
+                """
+                DELETE FROM memories
+                WHERE id NOT IN (
+                    SELECT MAX(id) FROM memories GROUP BY content
+                )
+                """
+            )
+        return cursor.rowcount
 
     def list_memories(self) -> List[str]:
         with self._connect() as connection:
@@ -63,25 +98,18 @@ class MemoryStore:
         if not query or not query.strip():
             return memories[-limit:]
 
-        normalized_query = query.casefold()
-        query_terms = {
-            part.casefold()
-            for part in re.findall(r"[A-Za-z0-9']+", normalized_query)
-            if part.strip()
-        }
-        if not query_terms:
+        query_tokens = _memory_search_tokens(query)
+        if "me" in query_tokens and query_tokens <= _PROFILE_QUERY_WORDS:
             return memories[-limit:]
 
-        expanded_terms = set(query_terms)
-        if "me" in expanded_terms or "my" in expanded_terms or "i" in expanded_terms:
-            expanded_terms |= {"me", "my", "i"}
-        if "you" in expanded_terms or "your" in expanded_terms:
-            expanded_terms |= {"you", "your"}
+        query_terms = query_tokens - _MEMORY_QUERY_STOP_WORDS
+        if not query_terms:
+            return []
 
         relevant: List[str] = []
         for memory in memories:
-            memory_text = memory.casefold()
-            if any(term in memory_text for term in expanded_terms):
+            memory_terms = _memory_search_tokens(memory)
+            if query_terms.issubset(memory_terms):
                 relevant.append(memory)
         if not relevant:
             return []
@@ -167,6 +195,8 @@ def parse_memory_intent(command: str) -> Optional[Dict[str, str]]:
             if remainder.casefold().startswith("the fact that "):
                 remainder = remainder[14:].strip()
             remainder = remainder.rstrip(" .!?")
+            if remainder.casefold() in {"that", "this"}:
+                return None
             if remainder:
                 return {"action": "save", "content": remainder}
             return None

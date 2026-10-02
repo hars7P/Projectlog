@@ -112,6 +112,19 @@ class MainVoiceModeTests(unittest.TestCase):
 		self.assertIn("3. Exit", output.getvalue())
 		self.assertIn("Goodbye.", output.getvalue())
 
+	def test_normal_text_conversation_does_not_save_memory(self):
+		brain = Mock()
+		brain.ask.return_value = "I am doing well."
+		memory_store = Mock()
+		with patch("main.JarvisBrain", return_value=brain):
+			with patch("main.MemoryStore", return_value=memory_store):
+				with patch("builtins.input", side_effect=["1", "How are you?", "exit"]):
+					with redirect_stdout(io.StringIO()):
+						run(Config(openai_api_key="sk-test-key"))
+
+		brain.ask.assert_called_once_with("How are you?")
+		memory_store.add_memory.assert_not_called()
+
 	def test_memory_commands_are_handled_with_sentence_punctuation(self):
 		brain = Mock()
 		brain.ask.return_value = "Hello."
@@ -133,12 +146,14 @@ class MainVoiceModeTests(unittest.TestCase):
 				]
 				memory_store.return_value.clear_memories.return_value = 1
 				memory_store.return_value.delete_memory.side_effect = delete_memory
-				with patch("builtins.input", side_effect=["1", "Remember that my name is Harshit.", "What do you know about me?", "Keep in mind that I am learning Python.", "What do you remember about Python?", "Forget that I am learning Python.", "exit"]):
+				with patch("builtins.input", side_effect=["1", "Remember that", "Remember that my name is Harshit.", "What do you know about me?", "Keep in mind that I am learning Python.", "What do you remember about Python?", "Forget that I am learning Python.", "exit"]):
 					with redirect_stdout(output):
 						run(config)
 
 		self.assertIn("Saved memory: my name is Harshit", output.getvalue())
 		self.assertIn("Saved memory: I am learning Python", output.getvalue())
+		self.assertIn("I didn't catch anything to remember.", output.getvalue())
+		self.assertEqual(memory_store.return_value.add_memory.call_count, 2)
 		self.assertIn("I remember: my name is Harshit", output.getvalue())
 		self.assertIn("I remember: I am learning Python", output.getvalue())
 		self.assertIn("I forgot that memory.", output.getvalue())

@@ -55,7 +55,9 @@ class JarvisBrain:
 		recent_history = self._history[-(_MAX_HISTORY_TURNS * 2):]
 		input_messages = recent_history[:]
 		if self._memory_store is not None:
-			relevant_memories = self._memory_store.get_relevant_memories(message, limit=3)
+			relevant_memories = list(dict.fromkeys(
+				self._memory_store.get_relevant_memories(message, limit=3)
+			))
 			if relevant_memories:
 				memory_context = "Relevant memories:\n- " + "\n- ".join(relevant_memories)
 				input_messages.append({"role": "user", "content": memory_context})
