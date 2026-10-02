@@ -72,6 +72,34 @@ class MainVoiceModeTests(unittest.TestCase):
 		self.assertIn("Switching to text mode.", output.getvalue())
 		self.assertIn("Goodbye.", output.getvalue())
 
+	def test_transcription_http_status_is_visible_before_fallback(self):
+		output = io.StringIO()
+		transcription_error = VoiceError(
+			"OpenAI transcription failed with HTTP 429: quota or rate limit."
+		)
+		with patch("main.listen_and_transcribe", side_effect=transcription_error):
+			with patch("builtins.input", side_effect=["2", "exit"]):
+				with redirect_stdout(output):
+					run(Config())
+
+		self.assertIn("VoiceError", output.getvalue())
+		self.assertIn("HTTP 429", output.getvalue())
+		self.assertIn("Switching to text mode.", output.getvalue())
+
+	def test_silence_returns_safely_to_text_conversation(self):
+		brain = Mock()
+		brain.ask.return_value = "I am ready to help."
+		output = io.StringIO()
+		with patch("main.JarvisBrain", return_value=brain):
+			with patch("main.listen_and_transcribe", side_effect=VoiceError("Sorry, I didn't hear anything.")):
+				with patch("builtins.input", side_effect=["2", "What is Python?", "exit"]):
+					with redirect_stdout(output):
+						run(Config(openai_api_key="sk-test-key"))
+
+		brain.ask.assert_called_once_with("What is Python?")
+		self.assertIn("Sorry, I didn't hear anything.", output.getvalue())
+		self.assertIn("I am ready to help.", output.getvalue())
+
 	def test_speech_output_failure_keeps_text_response_and_falls_back(self):
 		brain = Mock()
 		brain.ask.return_value = "Python is a programming language."

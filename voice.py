@@ -155,7 +155,10 @@ def transcribe_audio(audio_data: bytes, api_key: str, model: str) -> str:
 		logging.getLogger(__name__).warning(
 			"OpenAI transcription returned HTTP status %s", status_code
 		)
-		raise VoiceError(_transcription_error_message(status_code)) from None
+		raise VoiceError(
+			f"OpenAI transcription failed with HTTP {status_code}: "
+			f"{_transcription_error_message(status_code)}"
+		) from None
 	except (URLError, TimeoutError, OSError):
 		logging.getLogger(__name__).warning("Could not connect to OpenAI transcription")
 		raise VoiceError(
