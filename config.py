@@ -14,6 +14,18 @@ from dotenv import load_dotenv
 _VALID_LOG_LEVELS = {"CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"}
 
 
+def is_valid_openai_api_key(value: Optional[str]) -> bool:
+	"""Return True when the value looks like a real OpenAI API key."""
+	if value is None:
+		return False
+	key = value.strip()
+	if not key:
+		return False
+	if any(ch.isspace() for ch in key):
+		return False
+	return key.startswith(("sk-", "sk-proj-")) and len(key) >= 10
+
+
 @dataclass(frozen=True)
 class Config:
 	"""Runtime settings loaded from the project .env and environment."""
@@ -33,6 +45,8 @@ class Config:
 		if log_level not in _VALID_LOG_LEVELS:
 			log_level = "INFO"
 		api_key = os.getenv("OPENAI_API_KEY", "").strip() or None
+		if api_key is not None and not is_valid_openai_api_key(api_key):
+			api_key = None
 		model = os.getenv("OPENAI_MODEL", "gpt-4.1-mini").strip() or "gpt-4.1-mini"
 		transcription_model = os.getenv(
 			"OPENAI_TRANSCRIPTION_MODEL", "gpt-transcribe"

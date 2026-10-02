@@ -4,9 +4,11 @@ from __future__ import annotations
 
 import json
 import logging
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, cast
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
+
+from config import is_valid_openai_api_key
 
 
 _API_URL = "https://api.openai.com/v1/responses"
@@ -28,6 +30,8 @@ class JarvisBrain:
 
 	def __init__(self, api_key: Optional[str], model: str) -> None:
 		self._api_key = (api_key or "").strip()
+		if self._api_key and not is_valid_openai_api_key(self._api_key):
+			self._api_key = ""
 		self._model = model.strip() or "gpt-4.1-mini"
 		self._history: List[Dict[str, str]] = []
 
@@ -38,11 +42,11 @@ class JarvisBrain:
 			raise BrainError("Please enter a message.")
 		if not self._api_key:
 			raise BrainError(
-				"No OpenAI API key is configured. Add OPENAI_API_KEY to your .env file."
+				"No valid OpenAI API key is configured. Add a real OpenAI API key to the application configuration."
 			)
 
 		recent_history = self._history[-(_MAX_HISTORY_TURNS * 2):]
-		request_body = {
+		request_body = { # type: ignore
 			"model": self._model,
 			"instructions": _SYSTEM_INSTRUCTIONS,
 			"input": recent_history + [{"role": "user", "content": message}],
@@ -94,11 +98,11 @@ class JarvisBrain:
 	@staticmethod
 	def _http_error_message(status_code: int) -> str:
 		if status_code == 401:
-			return "OpenAI rejected the API key. Check OPENAI_API_KEY in your .env file."
+			return "OpenAI rejected the API key. Check your API key configuration."
 		if status_code == 403:
 			return "OpenAI denied access. Check your account and model access."
 		if status_code == 404:
-			return "The configured OpenAI model was not found. Check OPENAI_MODEL in .env."
+			return "The configured OpenAI model was not found. Check your model configuration."
 		if status_code == 429:
 			return "OpenAI is receiving too many requests or your quota is exhausted. Try again later."
 		if status_code >= 500:
@@ -110,21 +114,29 @@ class JarvisBrain:
 		if not isinstance(payload, dict):
 			return ""
 
+		response_data = cast(Dict[str, object], payload)
 		text_parts: List[str] = []
-		output = payload.get("output")
+		output = response_data.get("output")
 		if not isinstance(output, list):
 			return ""
-		for item in output:
-			if not isinstance(item, dict) or item.get("type") != "message":
+		for item in cast(List[object], output):
+			if not isinstance(item, dict):
 				continue
-			content = item.get("content")
+			item_data = cast(Dict[str, object], item)
+			if item_data.get("type") != "message":
+				continue
+			content = item_data.get("content")
 			if not isinstance(content, list):
 				continue
-			for part in content:
+			for part in cast(List[object], content):
 				if not isinstance(part, dict):
 					continue
-				if part.get("type") == "output_text" and isinstance(part.get("text"), str):
-					text_parts.append(part["text"])
-				elif part.get("type") == "refusal" and isinstance(part.get("refusal"), str):
-					text_parts.append(part["refusal"])
+				part_data = cast(Dict[str, object], part)
+				part_type = part_data.get("type")
+				text = part_data.get("text")
+				refusal = part_data.get("refusal")
+				if part_type == "output_text" and isinstance(text, str):
+					text_parts.append(text)
+				elif part_type == "refusal" and isinstance(refusal, str):
+					text_parts.append(refusal)
 		return "".join(text_parts).strip()

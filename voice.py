@@ -3,21 +3,41 @@
 from __future__ import annotations
 
 import io
+import importlib
 import json
 import logging
 import platform
 import subprocess
 import uuid
 import wave
-from typing import Optional
+from typing import Dict, Optional, Protocol, cast
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
+
+from config import is_valid_openai_api_key
 
 
 _TRANSCRIPTION_API_URL = "https://api.openai.com/v1/audio/transcriptions"
 _DEFAULT_TRANSCRIPTION_MODEL = "gpt-transcribe"
 _RECORDING_SAMPLE_RATE = 16000
 _REQUEST_TIMEOUT_SECONDS = 60
+
+
+class _AudioRecording(Protocol):
+	def tobytes(self) -> bytes: ...
+
+
+class _SoundDevice(Protocol):
+	def rec(
+		self,
+		frames: int,
+		*,
+		samplerate: int,
+		channels: int,
+		dtype: str,
+	) -> _AudioRecording: ...
+
+	def wait(self) -> None: ...
 
 
 class VoiceError(Exception):
@@ -30,7 +50,7 @@ def listen_for_audio(duration_seconds: int = 6) -> bytes:
 		raise ValueError("Recording duration must be between 1 and 30 seconds.")
 
 	try:
-		import sounddevice
+		sounddevice = cast(_SoundDevice, importlib.import_module("sounddevice"))
 	except (ImportError, OSError):
 		raise VoiceError(
 			"Microphone support couldn't be loaded. Reinstall packages from requirements.txt."
@@ -74,7 +94,11 @@ def listen_and_transcribe(
 	"""Record speech and return its OpenAI transcription."""
 	if not (api_key or "").strip():
 		raise VoiceError(
-			"No OpenAI API key is configured. Add OPENAI_API_KEY to your .env file."
+			"No valid OpenAI API key is configured. Add a real OpenAI API key to the application configuration."
+		)
+	if not is_valid_openai_api_key(api_key):
+		raise VoiceError(
+			"The configured OpenAI API key is invalid. Add a real OpenAI API key to the application configuration."
 		)
 	audio_data = listen_for_audio(duration_seconds=duration_seconds)
 	return transcribe_audio(audio_data, api_key or "", model)
@@ -85,7 +109,11 @@ def transcribe_audio(audio_data: bytes, api_key: str, model: str) -> str:
 	key = api_key.strip()
 	if not key:
 		raise VoiceError(
-			"No OpenAI API key is configured. Add OPENAI_API_KEY to your .env file."
+			"No valid OpenAI API key is configured. Add a real OpenAI API key to the application configuration."
+		)
+	if not is_valid_openai_api_key(key):
+		raise VoiceError(
+			"The configured OpenAI API key is invalid. Add a real OpenAI API key to the application configuration."
 		)
 	if not audio_data:
 		raise VoiceError("I didn't receive any microphone audio. Please try again.")
@@ -137,10 +165,15 @@ def transcribe_audio(audio_data: bytes, api_key: str, model: str) -> str:
 		logging.getLogger(__name__).warning("OpenAI returned an unreadable transcription")
 		raise VoiceError("OpenAI returned an unreadable transcription. Please try again.") from None
 
-	if not isinstance(payload, dict) or not isinstance(payload.get("text"), str):
+	if not isinstance(payload, dict):
 		logging.getLogger(__name__).warning("OpenAI response did not contain a transcript")
 		raise VoiceError("I couldn't understand that. Please try again.")
-	transcript = payload["text"].strip()
+	payload_data = cast(Dict[str, object], payload)
+	transcript_value = payload_data.get("text")
+	if not isinstance(transcript_value, str):
+		logging.getLogger(__name__).warning("OpenAI response did not contain a transcript")
+		raise VoiceError("I couldn't understand that. Please try again.")
+	transcript = transcript_value.strip()
 	if not transcript:
 		raise VoiceError("Sorry, I didn't hear anything.")
 	return transcript
@@ -171,11 +204,11 @@ def speak_text(text: str) -> None:
 
 def _transcription_error_message(status_code: int) -> str:
 	if status_code == 401:
-		return "OpenAI rejected the API key. Check OPENAI_API_KEY in your .env file."
+		return "OpenAI rejected the API key. Check your API key configuration."
 	if status_code == 403:
 		return "OpenAI denied access to speech transcription. Check your account access."
 	if status_code == 404:
-		return "The transcription model was not found. Check OPENAI_TRANSCRIPTION_MODEL in .env."
+		return "The transcription model was not found. Check your transcription model configuration."
 	if status_code == 429:
 		return "OpenAI is receiving too many requests or your quota is exhausted. Try again later."
 	if status_code >= 500:

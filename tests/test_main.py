@@ -6,7 +6,7 @@ from contextlib import redirect_stdout
 from unittest.mock import Mock, patch
 
 from config import Config
-from main import main, run
+from main import _safe_diagnostic, main, run
 from voice import VoiceError
 
 
@@ -35,7 +35,7 @@ class MainVoiceModeTests(unittest.TestCase):
 		brain = Mock()
 		brain.ask.return_value = "Hello from JARVIS."
 		config = Config(
-			openai_api_key="test-key",
+			openai_api_key="sk-test-key",
 			openai_model="test-model",
 			openai_transcription_model="test-transcription-model",
 		)
@@ -52,7 +52,7 @@ class MainVoiceModeTests(unittest.TestCase):
 		self.assertEqual(listen.call_count, 2)
 		self.assertEqual(
 			listen.call_args_list[0].kwargs,
-			{"api_key": "test-key", "model": "test-transcription-model"},
+			{"api_key": "sk-test-key", "model": "test-transcription-model"},
 		)
 		speak.assert_called_once_with("Hello from JARVIS.")
 		self.assertIn("1. Text mode", output.getvalue())
@@ -74,7 +74,7 @@ class MainVoiceModeTests(unittest.TestCase):
 	def test_speech_output_failure_keeps_text_response_and_falls_back(self):
 		brain = Mock()
 		brain.ask.return_value = "Python is a programming language."
-		config = Config(openai_api_key="test-key")
+		config = Config(openai_api_key="sk-test-key")
 		output = io.StringIO()
 
 		with patch("main.JarvisBrain", return_value=brain):
@@ -87,6 +87,18 @@ class MainVoiceModeTests(unittest.TestCase):
 		self.assertIn("Python is a programming language.", output.getvalue())
 		self.assertIn("speaker unavailable", output.getvalue())
 		self.assertIn("Switching to text mode.", output.getvalue())
+
+	def test_safe_diagnostic_redacts_credentials(self):
+		diagnostic = _safe_diagnostic(
+			"voice.listen_and_transcribe",
+			ValueError("Authorization: Bearer sk-secret-token OPENAI_API_KEY=top-secret-key"),
+		)
+
+		self.assertIn("voice.listen_and_transcribe failed", diagnostic)
+		self.assertIn("ValueError", diagnostic)
+		self.assertNotIn("sk-secret-token", diagnostic)
+		self.assertNotIn("top-secret-key", diagnostic)
+		self.assertIn("[REDACTED]", diagnostic)
 
 	def test_exit_from_startup_menu_does_not_create_brain(self):
 		output = io.StringIO()

@@ -2,11 +2,31 @@
 
 import argparse
 import logging
+import re
 from typing import Optional
 
 from config import Config, configure_logging
 from brain import BrainError, JarvisBrain
 from voice import VoiceError, listen_and_transcribe, speak_text
+
+
+def _safe_exception_message(raw_message: str) -> str:
+	message = raw_message.strip() or "(no message)"
+	message = re.sub(r"OPENAI_API_KEY", "API key", message, flags=re.IGNORECASE)
+	message = re.sub(r"OPENAI_MODEL", "model", message, flags=re.IGNORECASE)
+	message = re.sub(r"OPENAI_TRANSCRIPTION_MODEL", "transcription model", message, flags=re.IGNORECASE)
+	message = re.sub(r"API key\s*[:=]\s*[^\s\r\n]+", "API key=[REDACTED]", message, flags=re.IGNORECASE)
+	message = re.sub(r"Authorization\s*[:=]\s*Bearer\s+[^\s\r\n]+", "Authorization: Bearer [REDACTED]", message, flags=re.IGNORECASE)
+	message = re.sub(r"Bearer\s+[A-Za-z0-9._-]+", "Bearer [REDACTED]", message, flags=re.IGNORECASE)
+	message = re.sub(r"sk-[A-Za-z0-9]+", "[REDACTED_TOKEN]", message)
+	return message
+
+
+def _safe_diagnostic(component: str, error: BaseException) -> str:
+	return (
+		f"{component} failed: {type(error).__name__}: "
+		f"{_safe_exception_message(str(error))}"
+	)
 
 
 def _select_mode(config: Config) -> Optional[bool]:
@@ -49,8 +69,12 @@ def run(config: Config) -> None:
 				print(f"\n{config.name}: Goodbye.")
 				return
 			except VoiceError as error:
-				logging.getLogger(__name__).warning("Voice input could not be completed")
-				print(f"{config.name}: {error}")
+				logging.getLogger(__name__).warning(
+					"Voice input failed in listen_and_transcribe: %s: %s",
+					type(error).__name__,
+					_safe_exception_message(str(error)),
+				)
+				print(f"{config.name}: {_safe_diagnostic('voice.listen_and_transcribe', error)}")
 				print(f"{config.name}: Switching to text mode. Type 'voice' to retry.")
 				voice_mode = False
 				continue
@@ -96,8 +120,12 @@ def run(config: Config) -> None:
 				print(f"\n{config.name}: Goodbye.")
 				return
 			except VoiceError as error:
-				logging.getLogger(__name__).warning("Voice output could not be completed")
-				print(f"{config.name}: {error}")
+				logging.getLogger(__name__).warning(
+					"Voice output failed in speak_text: %s: %s",
+					type(error).__name__,
+					_safe_exception_message(str(error)),
+				)
+				print(f"{config.name}: {_safe_diagnostic('voice.speak_text', error)}")
 				print(f"{config.name}: Switching to text mode. Type 'voice' to retry.")
 				voice_mode = False
 
@@ -119,9 +147,9 @@ def main() -> int:
 	configure_logging(config.log_level)
 	try:
 		run(config)
-	except Exception:
+	except Exception as error:
 		logging.getLogger(__name__).exception("JARVIS encountered an unexpected error")
-		print(f"{config.name}: An unexpected error occurred. See the terminal log for details.")
+		print(f"{config.name}: {_safe_diagnostic('main', error)}")
 		return 1
 	return 0
 

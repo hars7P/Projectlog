@@ -37,11 +37,11 @@ class VoiceTests(unittest.TestCase):
 
 	def test_transcribes_audio_and_returns_clean_text(self):
 		with patch("voice.urlopen", return_value=_transcription_response("  Turn on the lights.  ")) as send:
-			transcript = transcribe_audio(b"fake wav data", "test-key", "gpt-transcribe")
+			transcript = transcribe_audio(b"fake wav data", "sk-test-key", "gpt-transcribe")
 
 		self.assertEqual(transcript, "Turn on the lights.")
 		request = send.call_args.args[0]
-		self.assertEqual(request.get_header("Authorization"), "Bearer test-key")
+		self.assertEqual(request.get_header("Authorization"), "Bearer sk-test-key")
 		self.assertIn(b'name="model"', request.data)
 		self.assertIn(b"gpt-transcribe", request.data)
 		self.assertIn(b'filename="speech.wav"', request.data)
@@ -49,7 +49,7 @@ class VoiceTests(unittest.TestCase):
 
 	def test_missing_key_does_not_record_microphone(self):
 		with patch("voice.listen_for_audio") as record:
-			with self.assertRaisesRegex(VoiceError, "No OpenAI API key"):
+			with self.assertRaisesRegex(VoiceError, "No valid OpenAI API key"):
 				listen_and_transcribe(api_key=None)
 
 		record.assert_not_called()
@@ -66,15 +66,15 @@ class VoiceTests(unittest.TestCase):
 	def test_empty_transcript_reports_no_speech(self):
 		with patch("voice.urlopen", return_value=_transcription_response("")):
 			with self.assertRaisesRegex(VoiceError, "Sorry, I didn't hear anything"):
-				transcribe_audio(b"fake wav data", "test-key", "gpt-transcribe")
+				transcribe_audio(b"fake wav data", "sk-test-key", "gpt-transcribe")
 
 	def test_invalid_transcription_shape_reports_unrecognized_speech(self):
 		with patch("voice.urlopen", return_value=io.BytesIO(b"{}")):
 			with self.assertRaisesRegex(VoiceError, "I couldn't understand that"):
-				transcribe_audio(b"fake wav data", "test-key", "gpt-transcribe")
+				transcribe_audio(b"fake wav data", "sk-test-key", "gpt-transcribe")
 
 	def test_authentication_error_does_not_expose_key(self):
-		secret = "never-display-this-key"
+		secret = "sk-never-display-this-key"
 		api_error = HTTPError(
 			"https://api.openai.com/v1/audio/transcriptions",
 			401,
