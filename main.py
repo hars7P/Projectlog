@@ -7,6 +7,7 @@ from typing import Optional
 
 from config import Config, configure_logging
 from brain import BrainError, JarvisBrain
+from memory import MemoryStore, MemoryStoreError, parse_memory_request
 from voice import VoiceError, listen_and_transcribe, speak_text
 
 
@@ -56,7 +57,8 @@ def run(config: Config) -> None:
 	voice_mode = _select_mode(config)
 	if voice_mode is None:
 		return
-	brain = JarvisBrain(api_key=config.openai_api_key, model=config.openai_model)
+	memory_store = MemoryStore()
+	brain = JarvisBrain(api_key=config.openai_api_key, model=config.openai_model, memory_store=memory_store)
 	while True:
 		if voice_mode:
 			print(f"{config.name}: Listening for up to 6 seconds...")
@@ -89,21 +91,71 @@ def run(config: Config) -> None:
 
 		if not command:
 			continue
-		if command.casefold() in {"exit", "quit", "bye"}:
+		normalized_command = command.rstrip(" .!?")
+		if normalized_command.casefold() in {"exit", "quit", "bye"}:
 			print(f"{config.name}: Goodbye.")
 			return
-		if command.casefold() == "help":
+		if normalized_command.casefold() == "help":
 			print(
-				f"{config.name}: Available commands: ask a question, voice, text, help, exit."
+				f"{config.name}: Available commands: ask a question, remember, what do you remember, forget, clear my memories, voice, text, help, exit."
 			)
 			continue
-		if command.casefold() == "voice":
+		if normalized_command.casefold() == "voice":
 			voice_mode = True
 			print(f"{config.name}: Voice mode active. Say 'text' to switch back.")
 			continue
-		if command.casefold() == "text":
+		if normalized_command.casefold() == "text":
 			voice_mode = False
 			print(f"{config.name}: Text mode on.")
+			continue
+		if normalized_command.casefold() in {"clear my memories", "clear memories", "clear my memory"}:
+			print(f"{config.name}: Clear all saved memories? Type 'yes' to confirm.")
+			try:
+				confirmation = input("Confirm: ").strip()
+			except (EOFError, KeyboardInterrupt):
+				print(f"\n{config.name}: Memory clear canceled.")
+				continue
+			if confirmation.casefold() not in {"yes", "y", "confirm", "clear all memories"}:
+				print(f"{config.name}: Memory clear canceled.")
+				continue
+			deleted = memory_store.clear_memories()
+			print(f"{config.name}: Cleared {deleted} saved memory(s).")
+			continue
+		if normalized_command.casefold().startswith("remember"):
+			memory_text = parse_memory_request(command)
+			if not memory_text:
+				print(f"{config.name}: I didn't catch anything to remember.")
+				continue
+			try:
+				stored = memory_store.add_memory(memory_text)
+			except MemoryStoreError as error:
+				print(f"{config.name}: {error}")
+				continue
+			print(f"{config.name}: Saved memory: {stored}")
+			continue
+		if normalized_command.casefold().startswith(("what do you remember", "what memories do you have", "list my memories", "show my memories")):
+			memories = memory_store.get_relevant_memories(command)
+			if not memories:
+				print(f"{config.name}: I don't have any saved memories yet.")
+				continue
+			print(f"{config.name}: I remember: {', '.join(memories)}")
+			continue
+		if normalized_command.casefold().startswith(("forget ", "delete ")):
+			content = command.split(None, 1)[1].strip().rstrip(" .!?")
+			if content.casefold() in {"that memory", "this memory", "it"}:
+				if memory_store.delete_latest_memory():
+					print(f"{config.name}: I forgot the most recent memory.")
+				else:
+					print(f"{config.name}: I don't have a recent memory to forget.")
+				continue
+			for prefix in ("that ", "this "):
+				if content.casefold().startswith(prefix):
+					content = content[len(prefix):].strip()
+					break
+			if memory_store.delete_memory(content):
+				print(f"{config.name}: I forgot that memory.")
+			else:
+				print(f"{config.name}: I couldn't find that memory.")
 			continue
 
 		try:

@@ -111,6 +111,30 @@ class MainVoiceModeTests(unittest.TestCase):
 		self.assertIn("3. Exit", output.getvalue())
 		self.assertIn("Goodbye.", output.getvalue())
 
+	def test_memory_commands_are_handled_with_sentence_punctuation(self):
+		brain = Mock()
+		brain.ask.return_value = "Hello."
+		config = Config(openai_api_key="sk-test-key")
+		output = io.StringIO()
+
+		with patch("main.JarvisBrain", return_value=brain):
+			with patch("main.MemoryStore") as memory_store:
+				memory_store.return_value.add_memory.side_effect = lambda value: value
+				memory_store.return_value.get_relevant_memories.return_value = [
+					"my name is Harshit",
+					"I am learning Python",
+				]
+				memory_store.return_value.clear_memories.return_value = 1
+				memory_store.return_value.delete_memory.side_effect = lambda value: value == "I am learning Python"
+				with patch("builtins.input", side_effect=["1", "Remember that my name is Harshit.", "Remember that I am learning Python.", "What do you remember about me?", "Forget that I am learning Python.", "exit"]):
+					with redirect_stdout(output):
+						run(config)
+
+		self.assertIn("Saved memory: my name is Harshit", output.getvalue())
+		self.assertIn("Saved memory: I am learning Python", output.getvalue())
+		self.assertIn("I remember: my name is Harshit, I am learning Python", output.getvalue())
+		self.assertIn("I forgot that memory.", output.getvalue())
+
 
 if __name__ == "__main__":
 	unittest.main()

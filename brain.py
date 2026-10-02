@@ -9,6 +9,7 @@ from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 from config import is_valid_openai_api_key
+from memory import MemoryStore
 
 
 _API_URL = "https://api.openai.com/v1/responses"
@@ -28,12 +29,18 @@ class BrainError(Exception):
 class JarvisBrain:
 	"""Send conversational text to OpenAI and retain recent context in memory."""
 
-	def __init__(self, api_key: Optional[str], model: str) -> None:
+	def __init__(
+		self,
+		api_key: Optional[str],
+		model: str,
+		memory_store: Optional[MemoryStore] = None,
+	) -> None:
 		self._api_key = (api_key or "").strip()
 		if self._api_key and not is_valid_openai_api_key(self._api_key):
 			self._api_key = ""
 		self._model = model.strip() or "gpt-4.1-mini"
 		self._history: List[Dict[str, str]] = []
+		self._memory_store = memory_store
 
 	def ask(self, user_message: str) -> str:
 		"""Return an AI response, raising BrainError with a safe message on failure."""
@@ -46,10 +53,17 @@ class JarvisBrain:
 			)
 
 		recent_history = self._history[-(_MAX_HISTORY_TURNS * 2):]
+		input_messages = recent_history[:]
+		if self._memory_store is not None:
+			relevant_memories = self._memory_store.get_relevant_memories(message, limit=3)
+			if relevant_memories:
+				memory_context = "Relevant memories:\n- " + "\n- ".join(relevant_memories)
+				input_messages.append({"role": "user", "content": memory_context})
+		input_messages.append({"role": "user", "content": message})
 		request_body = { # type: ignore
 			"model": self._model,
 			"instructions": _SYSTEM_INSTRUCTIONS,
-			"input": recent_history + [{"role": "user", "content": message}],
+			"input": input_messages,
 			"store": False,
 		}
 		request = Request(

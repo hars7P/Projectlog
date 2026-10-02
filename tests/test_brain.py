@@ -4,7 +4,7 @@ import io
 import json
 import unittest
 from urllib.error import HTTPError, URLError
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 from brain import BrainError, JarvisBrain
 
@@ -46,6 +46,20 @@ class JarvisBrainTests(unittest.TestCase):
 			[message["role"] for message in payload["input"]],
 			["user", "assistant", "user"],
 		)
+
+	def test_includes_only_relevant_memories_in_prompt(self):
+		memory_store = Mock()
+		memory_store.get_relevant_memories.return_value = ["my name is Harshit"]
+		brain = JarvisBrain(api_key="sk-test-key", model="test-model", memory_store=memory_store)
+		with patch("brain.urlopen", return_value=_response("Hello there.")) as send:
+			brain.ask("What is my name?")
+
+		request = send.call_args.args[0]
+		payload = json.loads(request.data.decode("utf-8"))
+		self.assertIn("Relevant memories", payload["input"][0]["content"])
+		self.assertIn("my name is Harshit", payload["input"][0]["content"])
+		self.assertEqual(payload["input"][-1]["content"], "What is my name?")
+		memory_store.get_relevant_memories.assert_called_once_with("What is my name?", limit=3)
 
 	def test_missing_key_does_not_send_request(self):
 		brain = JarvisBrain(api_key=None, model="test-model")
