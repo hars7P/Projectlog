@@ -75,11 +75,15 @@ class VoiceTests(unittest.TestCase):
 		openai_transcribe.assert_not_called()
 
 	def test_rate_limit_falls_back_with_the_same_recording(self):
+		api_error = HTTPError(
+			"https://api.openai.com/v1/audio/transcriptions",
+			429,
+			"Too Many Requests",
+			HTTPMessage(),
+			io.BytesIO(b"private service response"),
+		)
 		with patch("voice.listen_for_audio", return_value=b"recorded wav"):
-			with patch(
-				"voice.transcribe_audio",
-				side_effect=RecoverableTranscriptionError("OpenAI returned HTTP 429"),
-			):
+			with patch("voice.urlopen", side_effect=api_error):
 				with patch("voice.transcribe_wav", return_value="local transcript") as local_transcribe:
 					transcript = listen_and_transcribe("sk-test-key")
 
@@ -87,8 +91,15 @@ class VoiceTests(unittest.TestCase):
 		local_transcribe.assert_called_once_with(b"recorded wav")
 
 	def test_authentication_failure_does_not_fall_back_locally(self):
+		api_error = HTTPError(
+			"https://api.openai.com/v1/audio/transcriptions",
+			401,
+			"Unauthorized",
+			HTTPMessage(),
+			io.BytesIO(b"private service response"),
+		)
 		with patch("voice.listen_for_audio", return_value=b"recorded wav"):
-			with patch("voice.transcribe_audio", side_effect=VoiceError("HTTP 401")):
+			with patch("voice.urlopen", side_effect=api_error):
 				with patch("voice.transcribe_wav") as local_transcribe:
 					with self.assertRaisesRegex(VoiceError, "HTTP 401"):
 						listen_and_transcribe("sk-test-key")
