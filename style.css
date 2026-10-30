@@ -19,14 +19,12 @@
 }
 
 html {
-  min-width: 320px;
   min-height: 100%;
   background: var(--paper);
   scroll-behavior: smooth;
 }
 
 body {
-  min-width: 320px;
   min-height: 100vh;
   margin: 0;
   overflow-x: hidden;
@@ -299,6 +297,7 @@ h2 em {
   min-height: 450px;
   align-items: center;
   justify-items: center;
+  overflow: hidden;
   isolation: isolate;
 }
 
@@ -1440,6 +1439,22 @@ h2 em {
   .site-footer {
     min-height: 52px;
     font-size: 9px;
+  }
+}
+
+@media (max-width: 360px) {
+  .page-shell {
+    width: calc(100% - 28px);
+  }
+
+  .header-note {
+    gap: 5px;
+    font-size: 7px;
+    letter-spacing: 0.01em;
+  }
+
+  .wordmark {
+    font-size: 12px;
   }
 }
 

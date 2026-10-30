@@ -50,7 +50,6 @@ document.querySelector(".wordmark").addEventListener("click", (event) => {
 document.querySelector("#think-button").addEventListener("click", () => {
   proposalContent.hidden = true;
   thoughtMessage.hidden = false;
-  thoughtMessage.querySelector(".thought-message__heart").focus?.();
 });
 
 document.querySelector("#back-to-question").addEventListener("click", () => {
