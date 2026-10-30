@@ -20,6 +20,7 @@
 
 html {
   min-height: 100%;
+  overflow-x: clip;
   background: var(--paper);
   scroll-behavior: smooth;
 }
