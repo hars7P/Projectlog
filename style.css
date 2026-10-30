@@ -508,10 +508,13 @@ h2 em {
   max-width: 340px;
   aspect-ratio: 0.9;
   margin: 0 auto;
-  padding: 11px 11px 38px;
-  border: 1px solid rgba(185, 143, 129, 0.35);
+  padding: 11px 11px 51px;
+  border: 1px solid rgba(213, 147, 151, 0.65);
   background: #fffaf8;
-  box-shadow: 0 19px 55px rgba(117, 80, 78, 0.1);
+  box-shadow:
+    0 0 0 4px rgba(244, 211, 210, 0.38),
+    0 0 25px rgba(207, 135, 145, 0.24),
+    0 19px 55px rgba(117, 80, 78, 0.12);
   transform: rotate(-2deg);
 }
 
@@ -529,20 +532,39 @@ h2 em {
   bottom: 0;
   left: 0;
   display: flex;
-  height: 38px;
+  min-height: 51px;
+  padding: 7px 12px;
   align-items: center;
   justify-content: center;
-  gap: 6px;
   color: #897476;
   font-family: var(--serif);
   font-size: 12px;
   font-style: italic;
+  line-height: 1.5;
+  text-align: center;
 }
 
-.photo-frame__label span {
-  color: var(--rose);
-  font-family: var(--sans);
-  font-size: 15px;
+.photo-frame__heart {
+  position: absolute;
+  z-index: 1;
+  color: #c77b83;
+  font-size: 18px;
+  pointer-events: none;
+  text-shadow: 0 2px 8px rgba(185, 111, 118, 0.2);
+}
+
+.photo-frame__heart--one {
+  top: 24px;
+  right: -15px;
+  animation: photo-heart-float 3.8s ease-in-out infinite;
+}
+
+.photo-frame__heart--two {
+  bottom: 52px;
+  left: -16px;
+  color: #d3a08d;
+  font-size: 13px;
+  animation: photo-heart-float 4.4s 0.6s ease-in-out infinite;
 }
 
 .photo-note {
@@ -750,6 +772,10 @@ h2 em {
 
 .letter-screen .screen-actions {
   margin-top: 29px;
+}
+
+.letter-screen.screen--active .letter-card {
+  animation: letter-reveal 850ms cubic-bezier(0.2, 0.75, 0.25, 1) both;
 }
 
 .proposal-screen {
@@ -1038,6 +1064,27 @@ h2 em {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes letter-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes photo-heart-float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-8deg);
+  }
+  50% {
+    transform: translateY(-7px) rotate(8deg);
   }
 }
 
@@ -1331,6 +1378,13 @@ h2 em {
 
   .photo-frame {
     width: min(74%, 253px);
+  }
+
+  .photo-frame__label {
+    min-height: 46px;
+    padding-right: 8px;
+    padding-left: 8px;
+    font-size: 11px;
   }
 
   .photo-note {

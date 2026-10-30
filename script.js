@@ -3,7 +3,6 @@
 const screens = [...document.querySelectorAll(".screen")];
 const photoInput = document.querySelector("#photo-upload");
 const photoImage = document.querySelector(".photo-frame__image");
-const photoLabel = document.querySelector(".photo-frame__label");
 const thoughtMessage = document.querySelector("#thought-message");
 const proposalContent = document.querySelector("#proposal-content");
 const heartsContainer = document.querySelector("#celebration-hearts");
@@ -66,6 +65,16 @@ document.querySelector("#replay-button").addEventListener("click", () => {
   showScreen("welcome");
 });
 
+photoImage.addEventListener("error", () => {
+  if (photoImage.dataset.fallbackApplied === "true") {
+    return;
+  }
+
+  photoImage.dataset.fallbackApplied = "true";
+  photoImage.src = "assets/portrait-placeholder.svg";
+  photoImage.alt = "An elegant illustrated photo placeholder for Khushi";
+});
+
 photoInput.addEventListener("change", () => {
   const [file] = photoInput.files;
 
@@ -84,9 +93,9 @@ photoInput.addEventListener("change", () => {
   }
 
   currentPhotoUrl = URL.createObjectURL(file);
+  photoImage.dataset.fallbackApplied = "false";
   photoImage.src = currentPhotoUrl;
   photoImage.alt = `Your chosen photo: ${file.name}`;
-  photoLabel.innerHTML = '<span aria-hidden="true">♡</span> one of my favourite people';
 });
 
 function stopCelebration() {
