@@ -26,6 +26,7 @@ function showScreen(screenId) {
 
   thoughtMessage.hidden = true;
   proposalContent.hidden = false;
+  nextScreen.querySelector("h1, h2")?.focus({ preventScroll: true });
   window.scrollTo({ top: 0, behavior: "smooth" });
 
   if (screenId === "celebration") {
@@ -49,6 +50,7 @@ document.querySelector(".wordmark").addEventListener("click", (event) => {
 document.querySelector("#think-button").addEventListener("click", () => {
   proposalContent.hidden = true;
   thoughtMessage.hidden = false;
+  document.querySelector("#thought-title").focus();
 });
 
 document.querySelector("#back-to-question").addEventListener("click", () => {
