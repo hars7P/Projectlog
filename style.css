@@ -131,10 +131,110 @@ a:focus-visible,
   display: flex;
   align-items: center;
   gap: 9px;
+  padding-right: 64px;
   color: var(--muted);
   font-size: 10px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
+}
+
+.music-player {
+  position: fixed;
+  z-index: 20;
+  top: 18px;
+  right: max(16px, calc((100vw - 1240px) / 2));
+  display: grid;
+  justify-items: end;
+}
+
+.music-player__button {
+  position: relative;
+  display: grid;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  place-items: center;
+  border: 1px solid rgba(185, 111, 118, 0.36);
+  border-radius: 50%;
+  background: rgba(255, 250, 248, 0.94);
+  box-shadow: 0 7px 22px rgba(117, 80, 78, 0.12), 0 0 18px rgba(207, 135, 145, 0.14);
+  color: var(--rose-dark);
+  cursor: pointer;
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    background-color 180ms ease;
+}
+
+.music-player__button:hover:not(:disabled) {
+  background: #fff;
+  box-shadow: 0 9px 26px rgba(117, 80, 78, 0.17), 0 0 22px rgba(207, 135, 145, 0.24);
+}
+
+.music-player__button:disabled {
+  cursor: not-allowed;
+  opacity: 0.72;
+}
+
+.music-player__disc {
+  display: grid;
+  width: 33px;
+  height: 33px;
+  place-items: center;
+  border: 1px solid rgba(185, 111, 118, 0.28);
+  border-radius: 50%;
+  background: radial-gradient(circle, #fffaf8 0 27%, #f6e5e1 29% 100%);
+  font-size: 19px;
+  line-height: 1;
+}
+
+.music-player__pause {
+  display: none;
+  font-family: var(--sans);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.music-player.is-playing .music-player__note {
+  display: none;
+}
+
+.music-player.is-playing .music-player__pause {
+  display: block;
+}
+
+.music-player.is-playing .music-player__disc {
+  animation: music-spin 4s linear infinite;
+}
+
+.music-player__indicator {
+  position: absolute;
+  top: 3px;
+  right: 2px;
+  width: 9px;
+  height: 9px;
+  border: 2px solid var(--paper-light);
+  border-radius: 50%;
+  background: #b7aaa5;
+}
+
+.music-player.is-playing .music-player__indicator {
+  background: #6f9c78;
+  box-shadow: 0 0 9px rgba(111, 156, 120, 0.62);
+  animation: music-pulse 1.5s ease-in-out infinite;
+}
+
+.music-player__status {
+  max-width: min(280px, calc(100vw - 32px));
+  margin: 9px 0 0;
+  padding: 9px 12px;
+  border: 1px solid rgba(204, 172, 159, 0.55);
+  border-radius: 8px;
+  background: rgba(255, 250, 248, 0.97);
+  box-shadow: 0 7px 22px rgba(117, 80, 78, 0.12);
+  color: #71585b;
+  font-size: 10px;
+  line-height: 1.6;
 }
 
 .header-note__dot {
@@ -255,7 +355,7 @@ h2 em {
 }
 
 .button:hover {
-  transform: translateY(-2px);
+  box-shadow: 0 7px 19px rgba(117, 80, 78, 0.1);
 }
 
 .button--primary {
@@ -785,6 +885,9 @@ h2 em {
   align-items: center;
   justify-items: center;
   overflow: hidden;
+  background:
+    radial-gradient(ellipse at 50% 44%, rgba(255, 242, 240, 0.88), transparent 56%),
+    linear-gradient(145deg, rgba(247, 225, 222, 0.46), rgba(255, 249, 246, 0.35) 48%, rgba(239, 216, 212, 0.48));
   text-align: center;
 }
 
@@ -807,12 +910,26 @@ h2 em {
 }
 
 .proposal-heart {
+  position: relative;
   display: block;
-  margin: 0 auto 14px;
-  color: #c98183;
-  font-size: 38px;
+  width: 76px;
+  height: 76px;
+  margin: 0 auto 18px;
+  color: #c36f7b;
+  font-size: 62px;
   line-height: 1;
   animation: heartbeat 2.2s ease-in-out infinite;
+  filter: drop-shadow(0 0 15px rgba(202, 117, 132, 0.38));
+}
+
+.proposal-heart::before {
+  position: absolute;
+  z-index: -1;
+  inset: 5px;
+  border-radius: 50%;
+  background: rgba(238, 190, 188, 0.24);
+  content: "";
+  filter: blur(14px);
 }
 
 .proposal-content h2 {
@@ -821,12 +938,25 @@ h2 em {
   font-size: clamp(36px, 5vw, 62px);
 }
 
+.proposal-question {
+  max-width: 600px;
+  margin: 17px auto 0;
+  color: #694d53;
+  font-family: var(--serif);
+  font-size: clamp(20px, 2.5vw, 29px);
+  line-height: 1.55;
+}
+
+.proposal-question span {
+  white-space: nowrap;
+}
+
 .proposal-subtitle {
-  max-width: 425px;
-  margin: 17px auto 27px;
+  max-width: 545px;
+  margin: 15px auto 27px;
   color: var(--muted);
-  font-size: 11px;
-  line-height: 1.9;
+  font-size: 12px;
+  line-height: 1.85;
 }
 
 .proposal-actions {
@@ -837,14 +967,14 @@ h2 em {
 }
 
 .button--yes {
-  min-width: 191px;
-}
-
-.button--yes span span {
-  color: #f5d6d1;
+  min-width: 205px;
+  border-color: rgba(255, 255, 255, 0.25);
+  background: linear-gradient(135deg, #a95263, #c27882);
+  box-shadow: 0 9px 24px rgba(152, 74, 91, 0.22);
 }
 
 .button--soft {
+  min-width: 178px;
   padding: 0 17px;
   border-color: #ead8d2;
   background: rgba(255, 250, 248, 0.62);
@@ -868,6 +998,63 @@ h2 em {
   position: absolute;
   color: rgba(185, 111, 118, 0.2);
   pointer-events: none;
+}
+
+.proposal-petals {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.proposal-petal {
+  position: absolute;
+  top: 105%;
+  color: rgba(190, 112, 124, 0.34);
+  font-size: var(--petal-size, 19px);
+  animation: proposal-petal-rise var(--petal-duration, 12s) var(--petal-delay, 0s) linear infinite;
+}
+
+.proposal-petal--one {
+  left: 9%;
+  --petal-size: 19px;
+  --petal-duration: 15s;
+  --petal-delay: -3s;
+}
+
+.proposal-petal--two {
+  left: 27%;
+  --petal-size: 15px;
+  --petal-duration: 13s;
+  --petal-delay: -9s;
+}
+
+.proposal-petal--three {
+  left: 47%;
+  --petal-size: 17px;
+  --petal-duration: 17s;
+  --petal-delay: -5s;
+}
+
+.proposal-petal--four {
+  left: 67%;
+  --petal-size: 20px;
+  --petal-duration: 14s;
+  --petal-delay: -11s;
+}
+
+.proposal-petal--five {
+  left: 84%;
+  --petal-size: 14px;
+  --petal-duration: 16s;
+  --petal-delay: -7s;
+}
+
+.proposal-petal--six {
+  left: 95%;
+  --petal-size: 18px;
+  --petal-duration: 12s;
+  --petal-delay: -2s;
 }
 
 .proposal-decoration--left {
@@ -909,8 +1096,8 @@ h2 em {
 .thought-message__copy {
   margin: 17px 0 21px;
   color: var(--muted);
-  font-size: 12px;
-  line-height: 1.9;
+  font-size: 14px;
+  line-height: 1.85;
 }
 
 .thought-message__back {
@@ -955,7 +1142,9 @@ h2 em {
 }
 
 .celebration-content h2 {
-  font-size: clamp(38px, 5.1vw, 62px);
+  color: var(--rose-dark);
+  font-size: clamp(36px, 4.7vw, 58px);
+  line-height: 1.3;
 }
 
 .celebration-copy {
@@ -1109,6 +1298,19 @@ h2 em {
   }
 }
 
+@keyframes music-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes music-pulse {
+  50% {
+    box-shadow: 0 0 13px rgba(111, 156, 120, 0.85);
+    transform: scale(1.15);
+  }
+}
+
 @keyframes twinkle {
   0%,
   100% {
@@ -1118,6 +1320,23 @@ h2 em {
   50% {
     opacity: 1;
     transform: scale(1.12);
+  }
+}
+
+@keyframes proposal-petal-rise {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) rotate(-35deg);
+  }
+  12% {
+    opacity: 0.72;
+  }
+  80% {
+    opacity: 0.62;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(30px, -125vh, 0) rotate(145deg);
   }
 }
 
@@ -1168,6 +1387,17 @@ h2 em {
 
   .site-header {
     min-height: 72px;
+  }
+
+  .header-note {
+    padding-right: 58px;
+    font-size: 8px;
+    letter-spacing: 0.07em;
+  }
+
+  .music-player {
+    top: 12px;
+    right: 12px;
   }
 
   .screen {
@@ -1291,9 +1521,22 @@ h2 em {
   }
 
   .header-note {
-    gap: 6px;
-    font-size: 8px;
-    letter-spacing: 0.07em;
+    display: none;
+  }
+
+  .music-player {
+    top: 70px;
+    right: 12px;
+  }
+
+  .music-player__button {
+    width: 44px;
+    height: 44px;
+  }
+
+  .music-player__disc {
+    width: 30px;
+    height: 30px;
   }
 
   .header-note__dot {
@@ -1456,9 +1699,22 @@ h2 em {
     font-size: clamp(35px, 9.2vw, 48px);
   }
 
+  .proposal-heart {
+    width: 66px;
+    height: 66px;
+    margin-bottom: 14px;
+    font-size: 53px;
+  }
+
+  .proposal-question {
+    margin-top: 13px;
+    font-size: clamp(19px, 5.3vw, 24px);
+  }
+
   .proposal-subtitle {
-    max-width: 340px;
-    font-size: 10px;
+    max-width: 365px;
+    margin-top: 12px;
+    font-size: 11px;
   }
 
   .proposal-actions {
@@ -1480,11 +1736,11 @@ h2 em {
   }
 
   .thought-message__copy {
-    font-size: 11px;
+    font-size: 12px;
   }
 
   .celebration-content h2 {
-    font-size: clamp(36px, 9vw, 48px);
+    font-size: clamp(32px, 8.5vw, 43px);
   }
 
   .celebration-copy {

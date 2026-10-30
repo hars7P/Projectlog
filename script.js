@@ -7,9 +7,16 @@ const thoughtMessage = document.querySelector("#thought-message");
 const proposalContent = document.querySelector("#proposal-content");
 const heartsContainer = document.querySelector("#celebration-hearts");
 const confettiLayer = document.querySelector("#confetti-layer");
+const musicPlayer = document.querySelector("#music-player");
+const musicToggle = document.querySelector("#music-toggle");
+const musicStatus = document.querySelector("#music-status");
+const backgroundMusic = document.querySelector("#background-music");
 
 let currentPhotoUrl = null;
 let celebrationTimers = [];
+let musicUnavailable = false;
+let localAudioUrl = null;
+let loadingLocalAudio = false;
 
 function showScreen(screenId) {
   const nextScreen = document.getElementById(screenId);
@@ -66,6 +73,93 @@ document.querySelector("#yes-button").addEventListener("click", () => {
 document.querySelector("#replay-button").addEventListener("click", () => {
   showScreen("welcome");
 });
+
+function updateMusicState(isPlaying) {
+  musicPlayer.classList.toggle("is-playing", isPlaying);
+  musicToggle.setAttribute("aria-pressed", String(isPlaying));
+  musicToggle.setAttribute("aria-label", isPlaying ? "Pause our song" : "Play our song");
+
+  if (!musicUnavailable) {
+    musicStatus.hidden = true;
+    musicStatus.textContent = "";
+  }
+}
+
+function showMusicError() {
+  musicUnavailable = true;
+  updateMusicState(false);
+  musicToggle.disabled = true;
+  musicToggle.setAttribute("aria-label", "Our song is unavailable");
+  musicStatus.textContent = "Our song couldn’t play. Check that the MP3 is available and your browser supports MP3 audio.";
+  musicStatus.hidden = false;
+}
+
+musicToggle.addEventListener("click", async () => {
+  if (musicUnavailable) {
+    return;
+  }
+
+  if (!backgroundMusic.paused) {
+    backgroundMusic.pause();
+    return;
+  }
+
+  if (location.protocol === "file:" && !localAudioUrl) {
+    if (loadingLocalAudio) {
+      return;
+    }
+
+    loadingLocalAudio = true;
+    musicToggle.disabled = true;
+    musicStatus.textContent = "Getting our song ready…";
+    musicStatus.hidden = false;
+
+    try {
+      const response = await fetch(backgroundMusic.getAttribute("src"));
+      if (!response.ok && response.status !== 0) {
+        throw new Error(`Could not load the song (HTTP ${response.status}).`);
+      }
+
+      const song = await response.blob();
+      if (song.size === 0) {
+        throw new Error("The song file is empty.");
+      }
+
+      localAudioUrl = URL.createObjectURL(song);
+      backgroundMusic.src = localAudioUrl;
+    } catch {
+      showMusicError();
+      return;
+    } finally {
+      loadingLocalAudio = false;
+      if (!musicUnavailable) {
+        musicToggle.disabled = false;
+      }
+    }
+  }
+
+  try {
+    await backgroundMusic.play();
+  } catch {
+    if (backgroundMusic.error) {
+      showMusicError();
+      return;
+    }
+
+    musicStatus.textContent = "Unable to play the song. Please try again.";
+    musicStatus.hidden = false;
+  }
+});
+
+window.addEventListener("beforeunload", () => {
+  if (localAudioUrl) {
+    URL.revokeObjectURL(localAudioUrl);
+  }
+});
+
+backgroundMusic.addEventListener("play", () => updateMusicState(true));
+backgroundMusic.addEventListener("pause", () => updateMusicState(false));
+backgroundMusic.addEventListener("error", showMusicError);
 
 photoImage.addEventListener("error", () => {
   if (photoImage.dataset.fallbackApplied === "true") {

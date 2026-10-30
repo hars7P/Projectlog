@@ -24,6 +24,23 @@
   <body>
     <div class="ambient ambient--one" aria-hidden="true"></div>
     <div class="ambient ambient--two" aria-hidden="true"></div>
+    <aside class="music-player" id="music-player" aria-label="Background music player">
+      <button
+        class="music-player__button"
+        id="music-toggle"
+        type="button"
+        aria-label="Play our song"
+        aria-pressed="false"
+      >
+        <span class="music-player__disc" aria-hidden="true">
+          <span class="music-player__note">♫</span>
+          <span class="music-player__pause">Ⅱ</span>
+        </span>
+        <span class="music-player__indicator" aria-hidden="true"></span>
+      </button>
+      <p class="music-player__status" id="music-status" role="status" aria-live="polite" hidden></p>
+      <audio id="background-music" src="assets/our-song.mp3" loop preload="none" aria-hidden="true"></audio>
+    </aside>
     <div class="page-shell">
       <header class="site-header">
         <a class="wordmark" href="#welcome" aria-label="A little surprise for Khushi, welcome">
@@ -130,16 +147,25 @@
         </section>
 
         <section class="screen proposal-screen" id="proposal" aria-labelledby="proposal-title" hidden>
+          <div class="proposal-petals" aria-hidden="true">
+            <span class="proposal-petal proposal-petal--one">♡</span>
+            <span class="proposal-petal proposal-petal--two">✿</span>
+            <span class="proposal-petal proposal-petal--three">♥</span>
+            <span class="proposal-petal proposal-petal--four">✧</span>
+            <span class="proposal-petal proposal-petal--five">♡</span>
+            <span class="proposal-petal proposal-petal--six">✿</span>
+          </div>
           <div class="proposal-decoration proposal-decoration--left" aria-hidden="true">✿</div>
           <div class="proposal-decoration proposal-decoration--right" aria-hidden="true">✧</div>
           <div class="proposal-content" id="proposal-content">
             <p class="eyebrow"><span class="eyebrow__line"></span> one honest question <span class="eyebrow__line"></span></p>
             <span class="proposal-heart" aria-hidden="true">♡</span>
-            <h2 id="proposal-title" tabindex="-1">Khushi, kya tum meri life ka <em>hamesha wala</em> special person banna chahogi?</h2>
-            <p class="proposal-subtitle">No pressure, no rush. Just a little question from someone who cares about you a lot.</p>
+            <h2 id="proposal-title" tabindex="-1">Khushi, ek baat poochun?</h2>
+            <p class="proposal-question">Khushi, kya tum meri life ka hamesha wala special person banna chahogi? <span aria-hidden="true">❤️</span></p>
+            <p class="proposal-subtitle">Main nahi jaanta future mein kya likha hai, lekin agar tum chaho toh main tumhare saath khoobsurat memories banana chahta hoon. No pressure, just an honest feeling from my heart.</p>
             <div class="proposal-actions">
-              <button class="button button--primary button--yes" type="button" id="yes-button"><span>Haan, bilkul! <span aria-hidden="true">♥</span></span><span class="button__arrow" aria-hidden="true">↗</span></button>
-              <button class="button button--soft" type="button" id="think-button">Mujhe sochne do <span aria-hidden="true">♡</span></button>
+              <button class="button button--primary button--yes" type="button" id="yes-button">Yes, I'd love to ❤️</button>
+              <button class="button button--soft" type="button" id="think-button">Mujhe sochne do</button>
             </div>
             <p class="proposal-footnote">Whatever your answer, I’m glad I got to tell you.</p>
           </div>
@@ -147,7 +173,7 @@
             <span class="thought-message__heart" aria-hidden="true">♡</span>
             <p class="eyebrow"><span class="eyebrow__line"></span> take all the time you need <span class="eyebrow__line"></span></p>
             <h2 id="thought-title" tabindex="-1">Of course, <em>Khushi.</em></h2>
-            <p class="thought-message__copy">Dil ki baaton ka jawab dil se hi aana chahiye. Take your time — there’s absolutely no pressure. I’ll be here whenever you’re ready. ♡</p>
+            <p class="thought-message__copy">Bilkul Khushi, koi jaldi nahi. Tumhara answer aur comfort dono important hain. ❤️</p>
             <button class="text-button thought-message__back" id="back-to-question" type="button"><span aria-hidden="true">←</span> Back to my question</button>
           </div>
           <span class="screen-index">04 <span></span> 04</span>
@@ -159,8 +185,8 @@
             <span class="celebration-sparkle" aria-hidden="true">✦</span>
             <p class="eyebrow"><span class="eyebrow__line"></span> happiest heart right now <span class="eyebrow__line"></span></p>
             <div class="celebration-icon" aria-hidden="true">♥</div>
-            <h2 id="celebration-title" tabindex="-1">You just made my<br /><em>whole world, Khushi.</em></h2>
-            <p class="celebration-copy">Haan? Sach mein? <span aria-hidden="true">🥹</span><br />I can’t stop smiling. Thank you for making this moment so beautiful.</p>
+            <h2 id="celebration-title" tabindex="-1">Khushi!!! Tumne mera din bana diya! 🥹❤️</h2>
+            <p class="celebration-copy">Thank you for making this moment so beautiful.</p>
             <p class="celebration-signoff">Here’s to all the little moments waiting for us <span aria-hidden="true">♡</span></p>
             <button class="button button--outline celebration-replay" type="button" id="replay-button"><span>Read it all again</span><span aria-hidden="true">↺</span></button>
           </div>
