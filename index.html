@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="theme-color"
+      content="#fbf5f2"
+    />
+    <meta
+      name="description"
+      content="A little love-filled surprise, made just for Khushi."
+    />
+    <title>A Little Surprise for Khushi</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+    <script src="script.js" defer></script>
+  </head>
+  <body>
+    <div class="ambient ambient--one" aria-hidden="true"></div>
+    <div class="ambient ambient--two" aria-hidden="true"></div>
+    <div class="page-shell">
+      <header class="site-header">
+        <a class="wordmark" href="#welcome" aria-label="A little surprise for Khushi, welcome">
+          <span class="wordmark__heart" aria-hidden="true">♡</span>
+          <span>a little surprise</span>
+        </a>
+        <div class="header-note">
+          <span class="header-note__dot" aria-hidden="true"></span>
+          made with all my heart
+        </div>
+      </header>
+
+      <main>
+        <section class="screen screen--active welcome-screen" id="welcome" aria-labelledby="welcome-title">
+          <div class="welcome-copy">
+            <p class="eyebrow"><span class="eyebrow__line"></span> just for you, Khushi</p>
+            <h1 id="welcome-title">Hey Khushi! <span class="title-heart" aria-hidden="true">♥</span><br /><em>Ek chhoti si</em><br />surprise hai tumhare liye...</h1>
+            <p class="welcome-copy__text">Kuch baatein dil mein thi. Socha, aaj tumhe thoda pyaar se bata hi doon.</p>
+            <button class="button button--primary" type="button" data-go="photo">
+              <span>Open your little surprise</span>
+              <span class="button__arrow" aria-hidden="true">↗</span>
+            </button>
+            <p class="welcome-copy__aside"><span aria-hidden="true">✦</span> a tiny corner of the internet, made just for you</p>
+          </div>
+
+          <div class="welcome-art" aria-hidden="true">
+            <div class="art-orbit art-orbit--outer"></div>
+            <div class="art-orbit art-orbit--inner"></div>
+            <div class="art-sun"></div>
+            <div class="art-card">
+              <span class="art-card__top">FOR MY FAVOURITE PERSON</span>
+              <span class="art-card__flower">✿</span>
+              <span class="art-card__name">Khushi</span>
+              <span class="art-card__bottom">you make ordinary days feel like poetry</span>
+              <span class="art-card__heart">♥</span>
+            </div>
+            <span class="art-spark art-spark--one">✳</span>
+            <span class="art-spark art-spark--two">✦</span>
+            <span class="art-spark art-spark--three">✧</span>
+            <span class="art-caption">a little note, from my heart to yours</span>
+          </div>
+          <span class="screen-index">01 <span></span> 04</span>
+        </section>
+
+        <section class="screen photo-screen" id="photo" aria-labelledby="photo-title" hidden>
+          <div class="section-heading">
+            <p class="eyebrow"><span class="eyebrow__line"></span> a little memory</p>
+            <h2 id="photo-title">Some people just feel<br /><em>like sunshine.</em></h2>
+            <p class="section-heading__text">And somehow, you make even the simplest moments feel special.</p>
+          </div>
+
+          <div class="photo-layout">
+            <div class="photo-frame">
+              <img
+                class="photo-frame__image"
+                src="assets/portrait-placeholder.svg"
+                alt="A soft illustrated placeholder for a favourite photo of Khushi"
+              />
+              <div class="photo-frame__label"><span aria-hidden="true">♡</span> one of my favourite people</div>
+            </div>
+            <div class="photo-note">
+              <span class="photo-note__number">01 / us</span>
+              <p class="photo-note__quote">“Tumhari smile mein kuch toh baat hai — din kitna bhi ordinary ho, thoda better lagne lagta hai.”</p>
+              <p class="photo-note__caption">Replace the illustration with a photo that makes you smile.</p>
+              <label class="button button--outline upload-button" for="photo-upload">
+                <span>Choose a photo</span>
+                <span aria-hidden="true">↗</span>
+              </label>
+              <input class="visually-hidden" id="photo-upload" type="file" accept="image/*" />
+              <p class="photo-note__privacy">Your photo stays right here in your browser.</p>
+            </div>
+          </div>
+          <div class="screen-actions">
+            <button class="text-button" type="button" data-go="welcome"><span aria-hidden="true">←</span> Go back</button>
+            <button class="button button--primary" type="button" data-go="letter"><span>There’s more</span><span class="button__arrow" aria-hidden="true">↗</span></button>
+          </div>
+          <span class="screen-index">02 <span></span> 04</span>
+        </section>
+
+        <section class="screen letter-screen" id="letter" aria-labelledby="letter-title" hidden>
+          <div class="section-heading section-heading--center">
+            <p class="eyebrow"><span class="eyebrow__line"></span> a note from my heart <span class="eyebrow__line"></span></p>
+            <h2 id="letter-title">For you, <em>Khushi.</em></h2>
+          </div>
+          <article class="letter-card">
+            <div class="letter-card__top"><span>WITH LOVE, ALWAYS</span><span aria-hidden="true">♡</span></div>
+            <div class="letter-card__body">
+              <p class="letter-card__salutation">Dear Khushi,</p>
+              <p>Pata nahi exactly kab, but tum meri life ka woh hissa ban gayi jiske bina din thoda adhoora sa lagta hai. Tumse baat karna, tumhari hasi sunna, aur tumhare saath chhoti-chhoti baatein share karna — honestly, these are some of my favourite things.</p>
+              <p>Tumhari kindness, tumhara way of seeing the world, aur bas tumhara <em>tum hona</em> mujhe har roz thoda aur grateful banaata hai. I don’t want to rush you or put any pressure on your heart. Bas apne dil ki ek sachchi si baat tum tak pahunchaani thi.</p>
+              <p>Jo bhi tum feel karo, tumhari feelings mere liye important hain. Aur tum, Khushi, hamesha mere liye ek bahut special person rahogi.</p>
+              <p class="letter-card__signoff">Lots of love,<br /><span>someone who’s very glad to know you</span> <span class="signoff-heart" aria-hidden="true">♥</span></p>
+            </div>
+            <span class="letter-card__stamp" aria-hidden="true">♡</span>
+          </article>
+          <div class="screen-actions">
+            <button class="text-button" type="button" data-go="photo"><span aria-hidden="true">←</span> Go back</button>
+            <button class="button button--primary" type="button" data-go="proposal"><span>One last thing...</span><span class="button__arrow" aria-hidden="true">↗</span></button>
+          </div>
+          <span class="screen-index">03 <span></span> 04</span>
+        </section>
+
+        <section class="screen proposal-screen" id="proposal" aria-labelledby="proposal-title" hidden>
+          <div class="proposal-decoration proposal-decoration--left" aria-hidden="true">✿</div>
+          <div class="proposal-decoration proposal-decoration--right" aria-hidden="true">✧</div>
+          <div class="proposal-content" id="proposal-content">
+            <p class="eyebrow"><span class="eyebrow__line"></span> one honest question <span class="eyebrow__line"></span></p>
+            <span class="proposal-heart" aria-hidden="true">♡</span>
+            <h2 id="proposal-title">Khushi, kya tum meri life ka <em>hamesha wala</em> special person banna chahogi?</h2>
+            <p class="proposal-subtitle">No pressure, no rush. Just a little question from someone who cares about you a lot.</p>
+            <div class="proposal-actions">
+              <button class="button button--primary button--yes" type="button" id="yes-button"><span>Haan, bilkul! <span aria-hidden="true">♥</span></span><span class="button__arrow" aria-hidden="true">↗</span></button>
+              <button class="button button--soft" type="button" id="think-button">Mujhe sochne do <span aria-hidden="true">♡</span></button>
+            </div>
+            <p class="proposal-footnote">Whatever your answer, I’m glad I got to tell you.</p>
+          </div>
+          <div class="thought-message" id="thought-message" hidden aria-live="polite">
+            <span class="thought-message__heart" aria-hidden="true">♡</span>
+            <p class="eyebrow"><span class="eyebrow__line"></span> take all the time you need <span class="eyebrow__line"></span></p>
+            <h2>Of course, <em>Khushi.</em></h2>
+            <p class="thought-message__copy">Dil ki baaton ka jawab dil se hi aana chahiye. Take your time — there’s absolutely no pressure. I’ll be here whenever you’re ready. ♡</p>
+            <button class="text-button thought-message__back" id="back-to-question" type="button"><span aria-hidden="true">←</span> Back to my question</button>
+          </div>
+          <span class="screen-index">04 <span></span> 04</span>
+        </section>
+
+        <section class="screen celebration-screen" id="celebration" aria-labelledby="celebration-title" hidden>
+          <div class="celebration-hearts" id="celebration-hearts" aria-hidden="true"></div>
+          <div class="celebration-content">
+            <span class="celebration-sparkle" aria-hidden="true">✦</span>
+            <p class="eyebrow"><span class="eyebrow__line"></span> happiest heart right now <span class="eyebrow__line"></span></p>
+            <div class="celebration-icon" aria-hidden="true">♥</div>
+            <h2 id="celebration-title">You just made my<br /><em>whole world, Khushi.</em></h2>
+            <p class="celebration-copy">Haan? Sach mein? <span aria-hidden="true">🥹</span><br />I can’t stop smiling. Thank you for making this moment so beautiful.</p>
+            <p class="celebration-signoff">Here’s to all the little moments waiting for us <span aria-hidden="true">♡</span></p>
+            <button class="button button--outline celebration-replay" type="button" id="replay-button"><span>Read it all again</span><span aria-hidden="true">↺</span></button>
+          </div>
+          <span class="screen-index">♡ <span></span> ALWAYS</span>
+        </section>
+      </main>
+
+      <footer class="site-footer">
+        <span>made with a little extra love</span>
+        <span aria-hidden="true">♡</span>
+        <span>for Khushi</span>
+      </footer>
+    </div>
+    <div class="confetti-layer" id="confetti-layer" aria-hidden="true"></div>
+  </body>
+</html>

@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="800" viewBox="0 0 720 800" fill="none">
+  <defs>
+    <linearGradient id="background" x1="30" y1="14" x2="671" y2="786" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F6E8E2"/>
+      <stop offset="1" stop-color="#E9D1CE"/>
+    </linearGradient>
+    <linearGradient id="sun" x1="202" y1="118" x2="484" y2="404" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFF8F0"/>
+      <stop offset="1" stop-color="#EAC9BE"/>
+    </linearGradient>
+    <linearGradient id="dress" x1="238" y1="480" x2="528" y2="796" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#C58D8E"/>
+      <stop offset="1" stop-color="#A66872"/>
+    </linearGradient>
+  </defs>
+  <rect width="720" height="800" fill="url(#background)"/>
+  <circle cx="566" cy="147" r="95" fill="url(#sun)" opacity=".8"/>
+  <path d="M75 800c22-115 108-193 204-215 22-5 47-8 76-8s54 3 76 8c96 22 182 100 204 215H75Z" fill="url(#dress)"/>
+  <path d="M263 512c12 47 46 77 92 77s80-30 92-77l-13-83H276l-13 83Z" fill="#E5B9AC"/>
+  <ellipse cx="355" cy="332" rx="131" ry="161" fill="#F4D5C7"/>
+  <path d="M227 317c-13-107 44-198 139-202 105-5 164 83 145 204-11-27-23-56-35-81-50 13-118 6-192-17-10 33-29 65-57 96Z" fill="#644C4A"/>
+  <path d="M267 363c13-9 28-9 42 0M401 363c13-9 28-9 42 0" stroke="#75514F" stroke-linecap="round" stroke-width="8"/>
+  <path d="M332 440c15 11 34 11 49 0" stroke="#B36D70" stroke-linecap="round" stroke-width="7"/>
+  <circle cx="273" cy="402" r="21" fill="#E8A6A0" opacity=".38"/>
+  <circle cx="438" cy="402" r="21" fill="#E8A6A0" opacity=".38"/>
+  <path d="M103 184c19-33 42-45 67-35-4 30-28 47-67 35Zm13-61c18-23 42-27 66-13-10 27-32 35-66 13Z" fill="#C68E90" opacity=".75"/>
+  <path d="M574 545c16-28 36-39 57-30-4 26-24 40-57 30Zm11-51c16-20 36-23 57-11-9 23-28 30-57 11Z" fill="#C68E90" opacity=".72"/>
+  <path d="M119 641c20-32 43-42 68-29-7 29-30 42-68 29Zm359-417c15-25 34-34 55-24-5 24-23 36-55 24Z" fill="#D9A69B" opacity=".65"/>
+  <text x="360" y="730" fill="#FFF6F0" font-family="Georgia,serif" font-size="24" font-style="italic" text-anchor="middle" opacity=".92">your favourite photo goes here</text>
+</svg>
